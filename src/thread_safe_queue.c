@@ -69,7 +69,7 @@ void enqueue(thread_safe_queue *q, blob* item)
     q->tail = temp;
 }
 
-blob* dequeue_and_return_node(thread_safe_queue *q)
+blob* dequeue_and_return_blob(thread_safe_queue *q)
 {
     if (q->head == NULL)
        return NULL;
@@ -84,7 +84,7 @@ blob* dequeue_and_return_node(thread_safe_queue *q)
     return item;
 }
 
-queue_node* dequeue_and_return_blob(thread_safe_queue *q)
+queue_node* dequeue_and_return_node(thread_safe_queue *q)
 {
     if (q->head == NULL)
        return NULL;
