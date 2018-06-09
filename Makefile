@@ -40,4 +40,4 @@ obj:
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJS) $(SLIB) $(ALIB)  *.log
+	rm -rf $(OBJS) $(SLIB) $(ALIB) obj *.log
