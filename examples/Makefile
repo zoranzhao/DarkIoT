@@ -1,6 +1,6 @@
 VPATH=./examples
 OBJDIR=./
-EXEC=test
+EXEC=test1
 
 CC=gcc
 CXX=g++
@@ -29,7 +29,7 @@ CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectoriz
 endif
 
 CFLAGS+=$(OPTS)
-EXECOBJ = test.o
+EXECOBJ = test1.o
 DEPS = $(wildcard */*.h) Makefile
 
 all: $(EXEC)
@@ -39,6 +39,9 @@ $(EXEC): $(EXECOBJ)
 
 $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+
+test:
+	./test1
 
 .PHONY: clean
 
