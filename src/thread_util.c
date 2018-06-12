@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include <stdio.h>
 
 #ifndef SYS_ARCH_TIMEOUT
 #define SYS_ARCH_TIMEOUT 1000000
@@ -18,7 +19,61 @@
 #ifndef ERR_MEM
 #define ERR_MEM -1
 #endif
+/*
+   A retargetable multithread API implementation adopted from lwIP library.
+   Current implementation utilizes pthread.
+*/
+struct sys_thread {
+  struct sys_thread *next;
+  pthread_t pthread;
+};
+typedef struct sys_thread* sys_thread_t; 
+static sys_thread_t threads = NULL;
+static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
+static sys_thread_t introduce_thread(pthread_t id)
+{
+  struct sys_thread *thread;
 
+  thread = (struct sys_thread *)malloc(sizeof(struct sys_thread));
+
+  if (thread != NULL) {
+    pthread_mutex_lock(&threads_mutex);
+    thread->next = threads;
+    thread->pthread = id;
+    threads = thread;
+    pthread_mutex_unlock(&threads_mutex);
+  }
+
+  return thread;
+}
+
+sys_thread_t sys_thread_new(const char *name, void *(*function) (void *), void *arg, int stacksize, int prio)
+{
+  int code;
+  pthread_t tmp;
+  struct sys_thread *st = NULL;
+  /*name stacksize and prio is not used*/
+  code = pthread_create(&tmp,
+                        NULL, 
+                        (void *(*)(void *)) 
+                        function, 
+                        arg);
+
+  if (0 == code) {
+    st = introduce_thread(tmp);
+  }
+  
+  if (NULL == st) {
+    printf("sys_thread_new: pthread_create %d, st = 0x%lx", code, ((unsigned long)st));
+    abort();
+  }
+  return st;
+}
+
+/*
+   A retargetable Semaphore implementation adopted from lwIP library.
+   Current implementation utilizes pthread.
+*/
 struct sys_sem {
   unsigned int c;
   pthread_condattr_t condattr;
