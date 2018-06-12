@@ -1,5 +1,4 @@
 #include "darkiot.h"
-
 int main(){
    thread_safe_queue* q = new_queue(); 
    char testdata1[30]="testdata1!";
@@ -23,4 +22,5 @@ int main(){
    printf("%s\n", dequeue_and_return_blob(q)->data);
    printf("%s\n", dequeue_and_return_blob(q)->data);
    return 0;
+
 }
