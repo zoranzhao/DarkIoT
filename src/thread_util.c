@@ -33,9 +33,7 @@ static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 static sys_thread_t introduce_thread(pthread_t id)
 {
   struct sys_thread *thread;
-
   thread = (struct sys_thread *)malloc(sizeof(struct sys_thread));
-
   if (thread != NULL) {
     pthread_mutex_lock(&threads_mutex);
     thread->next = threads;
