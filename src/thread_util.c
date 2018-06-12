@@ -91,7 +91,6 @@ sys_sem_signal(struct sys_sem **s)
   sem = *s;
   pthread_mutex_lock(&(sem->mutex));
   sem->c++;
-
   if (sem->c > 1) {
     sem->c = 1;
   }
@@ -105,7 +104,6 @@ sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout)
   uint32_t time_needed = 0;
   struct sys_sem *sem;
   sem = *s;
-
   pthread_mutex_lock(&(sem->mutex));
   while (sem->c <= 0) {
     if (timeout > 0) {
