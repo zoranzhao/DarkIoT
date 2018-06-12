@@ -1,5 +1,6 @@
 #ifndef THREAD_SAFE_QUEUE_H
 #define THREAD_SAFE_QUEUE_H
+
 #include <stdint.h>
 #include <stdlib.h>
 
