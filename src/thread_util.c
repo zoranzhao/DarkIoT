@@ -1,5 +1,4 @@
 #include "thread_util.h"
-
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -8,7 +7,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <errno.h>
- 
+
 #ifndef SYS_ARCH_TIMEOUT
 #define SYS_ARCH_TIMEOUT 1000000
 #endif
@@ -28,6 +27,11 @@ struct sys_sem {
   pthread_mutex_t mutex;
 };
 
+static void
+get_monotonic_time(struct timespec *ts)
+{
+  clock_gettime(CLOCK_MONOTONIC, ts);
+}
 
 static struct sys_sem * sys_sem_new_internal(uint8_t count)
 {
@@ -49,56 +53,6 @@ int32_t sys_sem_new(struct sys_sem **sem, uint8_t count)
     return ERR_MEM;
   }
   return ERR_OK;
-}
-
-static uint32_t cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, uint32_t timeout);
-
-void
-sys_sem_signal(struct sys_sem **s)
-{
-  struct sys_sem *sem;
-  sem = *s;
-
-  pthread_mutex_lock(&(sem->mutex));
-  sem->c++;
-
-  if (sem->c > 1) {
-    sem->c = 1;
-  }
-
-  pthread_cond_broadcast(&(sem->cond));
-  pthread_mutex_unlock(&(sem->mutex));
-}
-
-
-uint32_t
-sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout)
-{
-  uint32_t time_needed = 0;
-  struct sys_sem *sem;
-  sem = *s;
-
-  pthread_mutex_lock(&(sem->mutex));
-  while (sem->c <= 0) {
-    if (timeout > 0) {
-      time_needed = cond_wait(&(sem->cond), &(sem->mutex), timeout);
-      if (time_needed == SYS_ARCH_TIMEOUT) {
-        pthread_mutex_unlock(&(sem->mutex));
-        return SYS_ARCH_TIMEOUT;
-      }
-    } else {
-      cond_wait(&(sem->cond), &(sem->mutex), 0);
-    }
-  }
-  sem->c--;
-  pthread_mutex_unlock(&(sem->mutex));
-  return (uint32_t)time_needed;
-}
-
-static void
-get_monotonic_time(struct timespec *ts)
-{
-  clock_gettime(CLOCK_MONOTONIC, ts);
 }
 
 static uint32_t cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, uint32_t timeout)
@@ -129,3 +83,58 @@ static uint32_t cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, uint32_t
   }
   return (uint32_t)(ts.tv_sec * 1000L + ts.tv_nsec / 1000000L);
 }
+
+void
+sys_sem_signal(struct sys_sem **s)
+{
+  struct sys_sem *sem;
+  sem = *s;
+  pthread_mutex_lock(&(sem->mutex));
+  sem->c++;
+
+  if (sem->c > 1) {
+    sem->c = 1;
+  }
+  pthread_cond_broadcast(&(sem->cond));
+  pthread_mutex_unlock(&(sem->mutex));
+}
+
+uint32_t
+sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout)
+{
+  uint32_t time_needed = 0;
+  struct sys_sem *sem;
+  sem = *s;
+
+  pthread_mutex_lock(&(sem->mutex));
+  while (sem->c <= 0) {
+    if (timeout > 0) {
+      time_needed = cond_wait(&(sem->cond), &(sem->mutex), timeout);
+      if (time_needed == SYS_ARCH_TIMEOUT) {
+        pthread_mutex_unlock(&(sem->mutex));
+        return SYS_ARCH_TIMEOUT;
+      }
+    } else {
+      cond_wait(&(sem->cond), &(sem->mutex), 0);
+    }
+  }
+  sem->c--;
+  pthread_mutex_unlock(&(sem->mutex));
+  return (uint32_t)time_needed;
+}
+
+static void sys_sem_free_internal(struct sys_sem *sem)
+{
+  pthread_cond_destroy(&(sem->cond));
+  pthread_condattr_destroy(&(sem->condattr));
+  pthread_mutex_destroy(&(sem->mutex));
+  free(sem);
+}
+
+void sys_sem_free(struct sys_sem **sem)
+{
+  if (sem != NULL) {
+    sys_sem_free_internal(*sem);
+  }
+}
+
