@@ -50,10 +50,11 @@ queue_node* new_empty_node()
    return temp; 
 }
 
-thread_safe_queue *new_queue()
+thread_safe_queue *new_queue(uint32_t capacity)
 {
     thread_safe_queue *q = (thread_safe_queue*)malloc(sizeof(thread_safe_queue));
     q->head = q->tail = NULL;
+    q->capacity = capacity;
     return q;
 }
 
