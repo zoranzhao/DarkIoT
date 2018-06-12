@@ -1,6 +1,7 @@
 #include "darkiot.h"
 
 int main(){
+
    thread_safe_queue* q = new_queue(); 
    char testdata1[30]="testdata1!";
    char testdata2[30]="testdata2!";
