@@ -1,5 +1,8 @@
 #include "thread_safe_queue.h"
 
+/*
+Programming API for data blobs
+*/
 blob* new_blob_and_move_data(int32_t id, uint32_t size, uint8_t* data)
 {
    blob *temp = (blob*)malloc(sizeof(blob));
@@ -34,7 +37,10 @@ void free_blob(blob* temp){
    free(temp);
 }
 
-queue_node* new_node_and_copy_item(blob* item)
+/*
+Programming API for thread safe queue.
+*/
+static queue_node* new_node_and_copy_item(blob* item)
 {
    queue_node *temp = (queue_node*)malloc(sizeof(queue_node));
    temp->item = item;
@@ -42,58 +48,112 @@ queue_node* new_node_and_copy_item(blob* item)
    return temp; 
 }
 
-queue_node* new_empty_node()
-{
-   queue_node *temp = (queue_node*)malloc(sizeof(queue_node));
-   temp->item = NULL;
-   temp->next = NULL;
-   return temp; 
-}
-
 thread_safe_queue *new_queue(uint32_t capacity)
 {
-    thread_safe_queue *q = (thread_safe_queue*)malloc(sizeof(thread_safe_queue));
-    q->head = q->tail = NULL;
-    q->capacity = capacity;
-    return q;
+   thread_safe_queue *q = (thread_safe_queue*)malloc(sizeof(thread_safe_queue));
+   q->head = q->tail = NULL;
+   q->capacity = capacity;
+   q->number_of_node = 0;
+   sys_sem_new(&(q->not_empty), 0);
+   sys_sem_new(&(q->not_full), 0);
+   sys_sem_new(&(q->mutex), 1);
+   q->wait_send = 0;
+   return q;
 }
 
-void enqueue(thread_safe_queue *q, blob* item)
+void enqueue(thread_safe_queue *queue, blob* item)
 {
-    queue_node *temp = new_node_and_copy_item(item);
-    if (q->tail == NULL)
-    {
-       q->head = q->tail = temp;
-       return;
-    }
-    q->tail->next = temp;
-    q->tail = temp;
+   uint8_t first;
+   queue_node *temp = new_node_and_copy_item(item);
+   sys_arch_sem_wait(&(queue->mutex), 0);
+   while ((queue->number_of_node) >= (queue->capacity)) {
+      queue->wait_send++;
+      sys_sem_signal(&queue->mutex);
+      sys_arch_sem_wait(&queue->not_full, 0);
+      sys_arch_sem_wait(&queue->mutex, 0);
+      queue->wait_send--;
+   }
+
+   if (queue->tail == NULL){
+      queue->head = queue->tail = temp;
+      first = 1;
+   }else{
+      queue->tail->next = temp;
+      queue->tail = temp;
+      first = 0;
+   }
+   queue->number_of_node++;
+
+   if (first) {
+      sys_sem_signal(&queue->not_empty);
+   }
+
+   sys_sem_signal(&queue->mutex);
+
 }
 
-blob* dequeue_and_return_blob(thread_safe_queue *q)
+blob* dequeue(thread_safe_queue *queue)
 {
-    if (q->head == NULL)
-       return NULL;
- 
-    queue_node *temp = q->head;
-    q->head = q->head->next;
-    if (q->head == NULL)
-       q->tail = NULL;
+   sys_arch_sem_wait(&queue->mutex, 0);
+   while (queue->head == NULL) {
+      sys_sem_signal(&queue->mutex);
+      /* We block while waiting for a mail to arrive in the mailbox. */
+      sys_arch_sem_wait(&queue->not_empty, 0);
+      sys_arch_sem_wait(&queue->mutex, 0);
+   } 
 
-    blob* item = temp->item; 
-    free(temp);
-    return item;
+   queue_node *temp = queue->head;
+   queue->head = queue->head->next;
+   if (queue->head == NULL)
+      queue->tail = NULL;
+   blob* item = temp->item; 
+   free(temp);
+   queue->number_of_node--;
+
+   if (queue->wait_send) {
+      sys_sem_signal(&queue->not_full);
+   }
+
+   sys_sem_signal(&queue->mutex);
+
+   return item;
 }
 
-queue_node* dequeue_and_return_node(thread_safe_queue *q)
+
+blob* try_dequeue(thread_safe_queue *queue)
 {
-    if (q->head == NULL)
-       return NULL;
- 
-    queue_node *temp = q->head;
-    q->head = q->head->next;
-    if (q->head == NULL)
-       q->tail = NULL;
-    return temp;
+   sys_arch_sem_wait(&queue->mutex, 0);
+   while (queue->head == NULL) {
+      sys_sem_signal(&queue->mutex);
+      return NULL;
+   } 
+
+   queue_node *temp = queue->head;
+   queue->head = queue->head->next;
+   if (queue->head == NULL)
+      queue->tail = NULL;
+   blob* item = temp->item; 
+   free(temp);
+   queue->number_of_node--;
+
+   if (queue->wait_send) {
+      sys_sem_signal(&queue->not_full);
+   }
+
+   sys_sem_signal(&queue->mutex);
+
+   return item;
 }
+void free_queue(thread_safe_queue *queue)
+{
+  if (queue != NULL) {
+    sys_arch_sem_wait(&queue->mutex, 0);
+    sys_sem_free(&queue->not_empty);
+    sys_sem_free(&queue->not_full);
+    sys_sem_free(&queue->mutex);
+    queue->not_empty = queue->not_full = queue->mutex = NULL;
+    free(queue);
+  }
+}
+
 
