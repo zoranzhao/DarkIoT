@@ -14,18 +14,18 @@ int main(){
 
    enqueue(q, b1);
    enqueue(q, b2);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
+   printf("%s\n", dequeue(q)->data);
    enqueue(q, b3);
    enqueue(q, b4);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
+   printf("%s\n", dequeue(q)->data);
    enqueue(q, b3);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
+   printf("%s\n", dequeue(q)->data);
    enqueue(q, b2);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
+   printf("%s\n", dequeue(q)->data);
    enqueue(q, b1);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
-   printf("%s\n", dequeue_and_return_blob(q)->data);
+   printf("%s\n", dequeue(q)->data);
+   printf("%s\n", dequeue(q)->data);
+   printf("%s\n", dequeue(q)->data);
    return 0;
 
 }
