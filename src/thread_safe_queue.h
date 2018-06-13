@@ -1,14 +1,7 @@
 #ifndef THREAD_SAFE_QUEUE_H
 #define THREAD_SAFE_QUEUE_H
 #include "thread_util.h"
-#include <stdint.h>
-#include <stdlib.h>
-
-typedef struct ts_blob {
-   uint8_t *data;
-   uint32_t size;
-   int32_t id;
-} blob;
+#include "data_blob.h"
 
 typedef struct ts_node {
    blob* item;
@@ -25,11 +18,6 @@ typedef struct ts_queue {
    sys_sem_t mutex;
    uint32_t wait_send;
 } thread_safe_queue;
-
-blob* new_blob_and_move_data(int32_t id, uint32_t size, uint8_t* data);
-blob* new_blob_and_alloc_data(int32_t id, uint32_t size);
-blob* new_empty_blob(int32_t id);
-void free_blob(blob* temp);
 
 thread_safe_queue *new_queue(uint32_t capacity);
 void enqueue(thread_safe_queue *q, blob* item);
