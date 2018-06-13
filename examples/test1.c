@@ -2,11 +2,11 @@
 
 int main(){
 
-   thread_safe_queue* q = new_queue(); 
+   thread_safe_queue* q = new_queue(10); 
    char testdata1[30]="testdata1!";
    char testdata2[30]="testdata2!";
    char testdata3[30]="testdata3!";
-   char testdata3[30]="testdata4!";
+   char testdata4[30]="testdata4!";
    blob* b1 = new_blob_and_move_data(1, 30, (uint8_t*)testdata1);
    blob* b2 = new_blob_and_move_data(2, 30, (uint8_t*)testdata2);
    blob* b3 = new_blob_and_move_data(3, 30, (uint8_t*)testdata3);
