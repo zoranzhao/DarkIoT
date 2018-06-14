@@ -17,4 +17,6 @@ blob* new_blob_and_alloc_data(int32_t id, uint32_t size);
 blob* new_empty_blob(int32_t id);
 void free_blob(blob* temp);
 
+blob* write_file_to_blob(const char *filename);
+void write_blob_to_file(const char *filename, blob* temp);
 #endif

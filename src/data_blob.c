@@ -1,5 +1,5 @@
 #include "data_blob.h"
-
+#include <stdio.h>
 blob* new_blob_and_copy_data(int32_t id, uint32_t size, uint8_t* data)
 {
    blob *temp = (blob*)malloc(sizeof(blob));
@@ -47,3 +47,33 @@ void free_blob(blob* temp){
    }
    free(temp);
 }
+
+blob* write_file_to_blob(const char *filename){
+   uint32_t size = 0;
+   blob* temp;
+   FILE *f = fopen(filename, "rb");
+   if (f == NULL){
+      return NULL;
+   }
+   fseek(f, 0, SEEK_END);
+   size = ftell(f);
+   fseek(f, 0, SEEK_SET);
+   temp = new_blob_and_alloc_data(0, size+1);
+   if(temp == NULL) return NULL;
+   if (size != fread(temp->data, sizeof(char), size, f)){
+      free_blob(temp);
+      return NULL;
+   }
+   fclose(f);
+   ((uint8_t*)temp->data)[size] = 0;
+   temp->size = size;
+   return temp;
+}
+
+void write_blob_to_file(const char *filename, blob* temp){
+   FILE *fp;
+   fp = fopen( filename , "wb" );
+   fwrite(temp->data, 1,  (temp->size)*sizeof(uint8_t), fp );
+   fclose(fp);
+}
+
