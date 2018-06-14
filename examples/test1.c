@@ -18,20 +18,27 @@ int main(){
 
    enqueue(q, b1);
    enqueue(q, b2);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
    enqueue(q, b3);
    enqueue(q, b4);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
    enqueue(q, b3);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
    enqueue(q, b2);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
    enqueue(q, b1);
-   printf("%s\n", dequeue(q)->data);
-   printf("%s\n", dequeue(q)->data);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
    enqueue(q, b5);
-   printf("%s\n", dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
+   printf("number_of_node %d, %s\n", q->number_of_node, dequeue(q)->data);
+   printf("number_of_node %d\n", q->number_of_node);
    printf("try_dequeue %d\n", (try_dequeue(q)==NULL));
 
    free_blob(b1);
