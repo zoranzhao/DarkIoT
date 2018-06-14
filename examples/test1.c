@@ -16,8 +16,6 @@ int main(){
    blob* b5 = new_blob_and_alloc_data(5, 30);
    strcpy((char*)b5->data, "testdata5!");
 
-
-
    enqueue(q, b1);
    enqueue(q, b2);
    printf("%s\n", dequeue(q)->data);
@@ -34,15 +32,13 @@ int main(){
    printf("%s\n", dequeue(q)->data);
    enqueue(q, b5);
    printf("%s\n", dequeue(q)->data);
+   printf("try_dequeue %d\n", (try_dequeue(q)==NULL));
 
    free_blob(b1);
    free_blob(b2);
    free_blob(b3);
    free_blob(b4);
    free_blob(b5);
-
-
-
 
    return 0;
 
