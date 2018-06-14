@@ -43,13 +43,13 @@ void producer(void *arg){
 }
 
 
-
 int main(){
    q = new_queue(20); 
    sys_thread_t t1 = sys_thread_new("consumer", consumer, NULL, 0, 0);
    sys_thread_t t2 = sys_thread_new("producer", producer, NULL, 0, 0);
    sys_thread_join(t1);
    sys_thread_join(t2);
+   sys_thread_join(t3);
    return 0;
 
 }
