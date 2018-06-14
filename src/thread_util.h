@@ -2,10 +2,12 @@
 #define THREAD_UTIL_H
 
 #include <stdint.h>
+typedef void (*thread_fn)(void *arg);
 struct sys_thread;
 typedef struct sys_thread* sys_thread_t;
 /*multithreading APIs*/
-sys_thread_t sys_thread_new(const char *name, void *(*function) (void *), void *arg, int stacksize, int prio);
+sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int stacksize, int prio);
+void sys_thread_join(sys_thread_t thread);
 
 /*Semaphore APIs*/
 struct sys_sem;

@@ -23,11 +23,11 @@
    A retargetable multithread API implementation adopted from lwIP library.
    Current implementation utilizes pthread.
 */
+
 struct sys_thread {
   struct sys_thread *next;
   pthread_t pthread;
 };
-typedef struct sys_thread* sys_thread_t; 
 static sys_thread_t threads = NULL;
 static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 static sys_thread_t introduce_thread(pthread_t id)
@@ -45,7 +45,7 @@ static sys_thread_t introduce_thread(pthread_t id)
   return thread;
 }
 
-sys_thread_t sys_thread_new(const char *name, void *(*function) (void *), void *arg, int stacksize, int prio)
+sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int stacksize, int prio)
 {
   int code;
   pthread_t tmp;
@@ -66,6 +66,10 @@ sys_thread_t sys_thread_new(const char *name, void *(*function) (void *), void *
     abort();
   }
   return st;
+}
+
+void sys_thread_join(sys_thread_t thread){
+    pthread_join(thread->pthread, NULL);
 }
 
 /*
