@@ -3,7 +3,7 @@
 blob* new_blob_and_copy_data(int32_t id, uint32_t size, uint8_t* data)
 {
    blob *temp = (blob*)malloc(sizeof(blob));
-   temp->data = (uint8_t*)malloc(sizeof(uint8_t));
+   temp->data = (uint8_t*)malloc(sizeof(uint8_t)*size);
    memcpy(temp->data, data, size);
    temp->size = size;
    temp->id = id;
@@ -24,7 +24,7 @@ blob* new_blob_and_move_data(int32_t id, uint32_t size, uint8_t* data)
 blob* new_blob_and_alloc_data(int32_t id, uint32_t size)
 {
    blob *temp = (blob*)malloc(sizeof(blob));
-   temp->data = (uint8_t*)malloc(sizeof(uint8_t));
+   temp->data = (uint8_t*)malloc(sizeof(uint8_t)*size);
    temp->size = size;
    temp->id = id;
    temp->free_data = 1;
