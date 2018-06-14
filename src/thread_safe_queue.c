@@ -3,7 +3,7 @@
 static queue_node* new_node_and_copy_item(blob* item)
 {
    queue_node *temp = (queue_node*)malloc(sizeof(queue_node));
-   temp->item = item;
+   temp->item = new_blob_and_copy_data(item->id, item->size, item->data);
    temp->next = NULL;
    return temp; 
 }
@@ -79,7 +79,6 @@ blob* dequeue(thread_safe_queue *queue)
    return item;
 }
 
-
 blob* try_dequeue(thread_safe_queue *queue)
 {
    sys_arch_sem_wait(&queue->mutex, 0);
@@ -104,6 +103,7 @@ blob* try_dequeue(thread_safe_queue *queue)
 
    return item;
 }
+
 void free_queue(thread_safe_queue *queue)
 {
   if (queue != NULL) {
