@@ -1,5 +1,5 @@
 #ifndef DATA_BLOB_H
-#define DATA_BLOB__H
+#define DATA_BLOB_H
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
