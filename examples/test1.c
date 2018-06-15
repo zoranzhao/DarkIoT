@@ -46,18 +46,28 @@ void producer(void *arg){
 void server_thread(void *arg){
    int mapreduce_service = service_init(8080, TCP);
    printf("Service number is %d\n", mapreduce_service);
+   blob* temp = recv_data(mapreduce_service, TCP);
+   write_blob_to_file("out.jpg", temp);
+   free_blob(temp);
 }
+
+
+void client_thread(void *arg){
+   blob* temp = write_file_to_blob("test.jpg");
+   send_data(temp, TCP, "10.145.80.46", 8080);
+   free_blob(temp);
+}
+
 
 int main(){
    q = new_queue(20); 
    sys_thread_t t1 = sys_thread_new("consumer", consumer, NULL, 0, 0);
    sys_thread_t t2 = sys_thread_new("producer", producer, NULL, 0, 0);
+   sys_thread_t t3 = sys_thread_new("server", server_thread, NULL, 0, 0);
+   sys_thread_t t4 = sys_thread_new("client", client_thread, NULL, 0, 0);
    sys_thread_join(t1);
    sys_thread_join(t2);
-   blob* temp = write_file_to_blob("test.jpg");
-   write_blob_to_file("out.jpg", temp);
-   free(temp);
-
- 
+   sys_thread_join(t3);
+   sys_thread_join(t4);
    return 0;
 }
