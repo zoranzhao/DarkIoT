@@ -26,15 +26,15 @@ int service_init(int portno, ctrl_proto proto){
    else if (proto == TCP) sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 #endif/*IPV4_TASK*/
    else {
-	printf("Control protocol is not supported");
+	printf("Control protocol is not supported\n");
 	exit(EXIT_FAILURE);
    }
    if (sockfd < 0) {
-	printf("ERROR opening socket");
+	printf("ERROR opening socket\n");
 	exit(EXIT_FAILURE);
    }
    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
-	printf("ERROR on binding");
+	printf("ERROR on binding\n");
 	exit(EXIT_FAILURE);
    }
    if (proto == TCP) listen(sockfd, 10);//back_log numbers 
@@ -58,7 +58,7 @@ blob* recv_data(int sockfd, ctrl_proto proto){
 
    if(proto == TCP){
       newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-      if (newsockfd < 0) printf("ERROR on accept");
+      if (newsockfd < 0) {printf("ERROR on accept\n");return NULL;}
       read_from_sock(newsockfd, TCP, (uint8_t*)&bytes_length, sizeof(bytes_length), NULL, NULL);
       buffer = (uint8_t*)malloc(bytes_length);
       read_from_sock(newsockfd, TCP, buffer, bytes_length, NULL, NULL);
@@ -68,9 +68,10 @@ blob* recv_data(int sockfd, ctrl_proto proto){
       buffer = (uint8_t*)malloc(bytes_length);
       read_from_sock(sockfd, UDP, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
    }else{ printf("Protocol is not supported\n"); return NULL;}
-   close(sockfd);
    blob* tmp = new_blob_and_copy_data(0, bytes_length, buffer);
    free(buffer);
+   /*This function is supposed to be called multiple times.*/
+   /*close(sockfd);*/
    return tmp;
 
 }
@@ -115,7 +116,7 @@ void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
       sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 #endif//IPV4_TASK
       if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-      printf("ERROR connecting");
+      printf("ERROR connecting\n");
    } else if (proto == UDP) {
 #if IPV4_TASK
       sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -123,8 +124,8 @@ void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
       sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
 #endif//IPV4_TASK
    }
-   else {printf("Control protocol is not supported"); return;}
-   if (sockfd < 0) printf("ERROR opening socket");
+   else {printf("Control protocol is not supported\n"); return;}
+   if (sockfd < 0) printf("ERROR opening socket\n");
 
    write_to_sock(sockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
    write_to_sock(sockfd, proto, (uint8_t*)data, bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
@@ -139,11 +140,11 @@ static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, u
    while (bytes_read < bytes_length){
       if(proto == TCP){
          n = recv(sock, buffer + bytes_read, bytes_length - bytes_read, 0);
-         if( n < 0 ) printf("ERROR reading socket");
+         if( n < 0 ) printf("ERROR reading socket\n");
       }else if(proto == UDP){
          if((bytes_length - bytes_read) < UDP_TRANS_SIZE) { n = bytes_length - bytes_read; }
          else { n = UDP_TRANS_SIZE; }
-         if( recvfrom(sock, buffer + bytes_read, n, 0, from, fromlen) < 0) printf("ERROR reading socket");
+         if( recvfrom(sock, buffer + bytes_read, n, 0, from, fromlen) < 0) printf("ERROR reading socket\n");
       }else{printf("Protocol is not supported\n");}
       bytes_read += n;
    }
@@ -155,7 +156,7 @@ static inline void write_to_sock(int sock, ctrl_proto proto, uint8_t* buffer, ui
    while (bytes_written < bytes_length) {
       if(proto == TCP){
          n = send(sock, buffer + bytes_written, bytes_length - bytes_written, 0);
-         if( n < 0 ) printf("ERROR writing socket");
+         if( n < 0 ) printf("ERROR writing socket\n");
       }else if(proto == UDP){
          if((bytes_length - bytes_written) < UDP_TRANS_SIZE) { n = bytes_length - bytes_written; }
          else { n = UDP_TRANS_SIZE; }
