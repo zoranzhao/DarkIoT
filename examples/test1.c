@@ -47,7 +47,13 @@ void server_thread(void *arg){
    int mapreduce_service = service_init(8080, TCP);
    printf("Service number is %d\n", mapreduce_service);
    blob* temp = recv_data(mapreduce_service, TCP);
-   write_blob_to_file("out.jpg", temp);
+   write_blob_to_file("out1.jpg", temp);
+   free_blob(temp);
+   temp = recv_data(mapreduce_service, TCP);
+   write_blob_to_file("out2.jpg", temp);
+   free_blob(temp);
+   temp = recv_data(mapreduce_service, TCP);
+   write_blob_to_file("out3.jpg", temp);
    free_blob(temp);
 }
 
