@@ -1,5 +1,5 @@
-#ifndef DARKIOT__H
-#define DARKIOT__H
+#ifndef DARKIOT_H
+#define DARKIOT_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +14,9 @@
 #include <time.h>
 
 #include "thread_safe_queue.h"
+#include "thread_util.h"
+#include "data_blob.h"
+#include "network_util.h"
 
 #endif
 
