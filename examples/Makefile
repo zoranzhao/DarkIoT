@@ -46,4 +46,4 @@ test:
 .PHONY: clean
 
 clean:
-	rm -rf $(EXEC) $(EXECOBJ) *.log *.png *.dat out.jpg
+	rm -rf $(EXEC) $(EXECOBJ) *.log *.png *.dat out*.jpg
