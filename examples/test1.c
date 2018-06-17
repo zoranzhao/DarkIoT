@@ -55,11 +55,14 @@ void server_thread(void *arg){
    temp = recv_data(mapreduce_service, TCP);
    write_blob_to_file("out3.jpg", temp);
    free_blob(temp);
+
 }
 
 
 void client_thread(void *arg){
    blob* temp = write_file_to_blob("test.jpg");
+   send_data(temp, TCP, "10.145.80.46", 8080);
+   send_data(temp, TCP, "10.145.80.46", 8080);
    send_data(temp, TCP, "10.145.80.46", 8080);
    free_blob(temp);
 }
