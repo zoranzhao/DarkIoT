@@ -153,7 +153,7 @@ void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
 #if IPV4_TASK
       sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 #elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+      sockfd = socket(AF_INET6, SOCK_DGRAM, 0); 
 #endif//IPV4_TASK
    }
    else {printf("Control protocol is not supported\n"); return;}
@@ -168,8 +168,7 @@ void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
 void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno){
    blob* temp = new_empty_blob(0);
    send_data_with_meta(meta, meta_size, temp, proto, dest_ip, portno);
-   free_blob(temp);
-   
+   free_blob(temp);  
 }
 
 void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
@@ -265,7 +264,7 @@ blob* recv_data(int sockfd, ctrl_proto proto){
    return tmp;
 }
 
-void recv_meta_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
+void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
    socklen_t clilen;
 
 #if IPV4_TASK

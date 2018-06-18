@@ -39,6 +39,5 @@ void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto 
 
 int service_init(int portno, ctrl_proto proto);
 blob* recv_data(int sockfd, ctrl_proto proto);
-void recv_meta_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
-
+void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
 #endif
