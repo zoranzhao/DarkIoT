@@ -22,4 +22,9 @@ int service_init(int portno, ctrl_proto proto);
 blob* recv_data(int sockfd, ctrl_proto proto);
 void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 
+void recv_data_with_handlers(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
+void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
+
+
+
 #endif
