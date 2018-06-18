@@ -108,70 +108,23 @@ void close_service_connection(service_conn* conn){
    free(conn);
 }
 
-void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
+void send_data(blob *temp, service_conn* conn){
    void* data;
    uint32_t bytes_length;
    data = temp->data;
    bytes_length = temp->size;
-/*lwIP implementation*/
-/* ip_addr_t dstaddr; */
 
-   int sockfd;
-#if IPV4_TASK
-   struct sockaddr_in serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_port = htons(portno);
-   inet_pton(AF_INET, dest_ip, &serv_addr.sin_addr);
-/*lwIP implementation*/
-/*
-   ip4addr_aton(dest_ip, ip_2_ip4(&dstaddr));
-   inet_addr_from_ip4addr(&serv_addr.sin_addr, ip_2_ip4(&dstaddr));
-*/
-#elif IPV6_TASK//IPV4_TASK
-   struct sockaddr_in6 serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin6_family = AF_INET6;
-   serv_addr.sin6_port = htons(portno);
-   inet_pton(AF_INET6, dest_ip, &serv_addr.sin6_addr);
-/*lwIP implementation*/
-/*
-   ip6addr_aton(dest_ip, ip_2_ip6(&dstaddr));
-   inet6_addr_from_ip6addr(&serv_addr.sin6_addr, ip_2_ip6(&dstaddr));
-*/
-#endif//IPV4_TASK
-
-   if(proto == TCP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_STREAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-#endif//IPV4_TASK
-      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-      printf("ERROR connecting\n");
-   } else if (proto == UDP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_DGRAM, 0); 
-#endif//IPV4_TASK
-   }
-   else {printf("Control protocol is not supported\n"); return;}
-   if (sockfd < 0) printf("ERROR opening socket\n");
-
-   write_to_sock(sockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-   write_to_sock(sockfd, proto, (uint8_t*)data, bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-
-   close(sockfd);
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
 }
 
-void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno){
+void send_request(void* meta, uint32_t meta_size, service_conn* conn){
    blob* temp = new_empty_blob(0);
-   send_data_with_meta(meta, meta_size, temp, proto, dest_ip, portno);
+   send_data_with_meta(meta, meta_size, temp, conn);
    free_blob(temp);  
 }
 
-void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
+void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, service_conn* conn){
    void* data;
    uint32_t bytes_length;
    void* meta_data;
@@ -180,46 +133,12 @@ void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto 
    meta_data = meta;
    bytes_length = temp->size;
    meta_data_bytes_length = meta_size;
-   int sockfd;
-#if IPV4_TASK
-   struct sockaddr_in serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_port = htons(portno);
-   inet_pton(AF_INET, dest_ip, &serv_addr.sin_addr);
-#elif IPV6_TASK//IPV4_TASK
-   struct sockaddr_in6 serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin6_family = AF_INET6;
-   serv_addr.sin6_port = htons(portno);
-   inet_pton(AF_INET6, dest_ip, &serv_addr.sin6_addr);
-#endif//IPV4_TASK
 
-   if(proto == TCP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_STREAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-#endif//IPV4_TASK
-      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-      printf("ERROR connecting\n");
-   } else if (proto == UDP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
-#endif//IPV4_TASK
-   }
-   else {printf("Control protocol is not supported\n"); return;}
-   if (sockfd < 0) printf("ERROR opening socket\n");
-
-   write_to_sock(sockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-   write_to_sock(sockfd, proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-   write_to_sock(sockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    if(bytes_length > 0)
-     write_to_sock(sockfd, proto, (uint8_t*)data, bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-
-   close(sockfd);
+     write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
 }
 
 
@@ -231,7 +150,7 @@ static inline uint32_t look_up_handler_table(char* name, const char* handler_nam
    return handler_id;
 }
 
-blob* recv_data(int sockfd, ctrl_proto proto){
+blob* recv_request(int sockfd, ctrl_proto proto){
    socklen_t clilen;
 
 #if IPV4_TASK
@@ -321,8 +240,6 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
    /*This function is supposed to be called one time only.*/
    close(sockfd);
 }
-
-
 
 #define UDP_TRANS_SIZE 512
 static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, struct sockaddr *from, socklen_t *fromlen){
