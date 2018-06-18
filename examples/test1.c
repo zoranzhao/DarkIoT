@@ -43,6 +43,22 @@ void producer(void *arg){
    free_blob(b5);
 }
 
+
+void* serve_steal(void* tmp){
+    printf("serve_steal ... ... \n");
+    return NULL;
+}
+
+void* serve_result(void* tmp){
+    printf("serve_result ... ... \n");
+    return NULL;
+}
+
+void* serve_sync(void* tmp){
+    printf("serve_sync ... ... \n");
+    return NULL;
+}
+
 void server_thread(void *arg){
    int mapreduce_service = service_init(8080, TCP);
    printf("Service number is %d\n", mapreduce_service);
@@ -56,6 +72,11 @@ void server_thread(void *arg){
    write_blob_to_file("out3.jpg", temp);
    free_blob(temp);
 
+   const char* request_types[]={"steal", "result", "sync"};
+   void* (*handlers[])(void*) = {serve_steal, serve_result, serve_sync};
+
+   recv_meta_and_handle_data(mapreduce_service, TCP, request_types, 3, handlers);
+   
 }
 
 
@@ -65,6 +86,14 @@ void client_thread(void *arg){
    send_data(temp, TCP, "10.145.80.46", 8080);
    send_data(temp, TCP, "10.145.80.46", 8080);
    free_blob(temp);
+
+   char request1[20] = "steal";
+   char request2[20] = "result";
+   char request3[20] = "sync";
+   send_request(request1, 20, TCP, "10.145.80.46", 8080);
+   send_request(request2, 20, TCP, "10.145.80.46", 8080);
+   send_request(request3, 20, TCP, "10.145.80.46", 8080);
+
 }
 
 
