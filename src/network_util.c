@@ -99,47 +99,10 @@ void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
 }
 
 void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno){
-   void* meta_data;
-   uint32_t meta_data_bytes_length;
-   meta_data = meta;
-   meta_data_bytes_length = meta_size;
-   int sockfd;
-#if IPV4_TASK
-   struct sockaddr_in serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_port = htons(portno);
-   inet_pton(AF_INET, dest_ip, &serv_addr.sin_addr);
-#elif IPV6_TASK//IPV4_TASK
-   struct sockaddr_in6 serv_addr;
-   memset(&serv_addr, 0, sizeof(serv_addr));
-   serv_addr.sin6_family = AF_INET6;
-   serv_addr.sin6_port = htons(portno);
-   inet_pton(AF_INET6, dest_ip, &serv_addr.sin6_addr);
-#endif//IPV4_TASK
-
-   if(proto == TCP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_STREAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-#endif//IPV4_TASK
-      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-      printf("ERROR connecting\n");
-   } else if (proto == UDP) {
-#if IPV4_TASK
-      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-#elif IPV6_TASK//IPV4_TASK
-      sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
-#endif//IPV4_TASK
-   }
-   else {printf("Control protocol is not supported\n"); return;}
-   if (sockfd < 0) printf("ERROR opening socket\n");
-
-   write_to_sock(sockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-   write_to_sock(sockfd, proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-
-   close(sockfd);
+   blob* temp = new_empty_blob(0);
+   send_data_with_meta(meta, meta_size, temp, proto, dest_ip, portno);
+   free_blob(temp);
+   
 }
 
 void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
@@ -187,7 +150,8 @@ void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto 
    write_to_sock(sockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
    write_to_sock(sockfd, proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
    write_to_sock(sockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-   write_to_sock(sockfd, proto, (uint8_t*)data, bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+   if(bytes_length > 0)
+     write_to_sock(sockfd, proto, (uint8_t*)data, bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 
    close(sockfd);
 }
@@ -234,7 +198,7 @@ blob* recv_data(int sockfd, ctrl_proto proto){
    return tmp;
 }
 
-void recv_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
+void recv_meta_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
    socklen_t clilen;
 
 #if IPV4_TASK
@@ -246,10 +210,11 @@ void recv_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name
    int newsockfd;
    clilen = sizeof(cli_addr);
    uint32_t bytes_length;
-   uint8_t* buffer;
-
+   uint8_t* buffer = NULL;
    uint32_t meta_data_bytes_length;
    uint8_t* meta_data;
+   blob* tmp;
+
    while(1){
       uint32_t handler_id = 0;
       if(proto == TCP){
@@ -259,19 +224,27 @@ void recv_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name
          meta_data = (uint8_t*)malloc(meta_data_bytes_length);
          read_from_sock(newsockfd, TCP, meta_data, meta_data_bytes_length, NULL, NULL);
          read_from_sock(newsockfd, TCP, (uint8_t*)&bytes_length, sizeof(bytes_length), NULL, NULL);
-         buffer = (uint8_t*)malloc(bytes_length);
-         read_from_sock(newsockfd, TCP, buffer, bytes_length, NULL, NULL);
+         if(bytes_length > 0){
+            buffer = (uint8_t*)malloc(bytes_length);
+            read_from_sock(newsockfd, TCP, buffer, bytes_length, NULL, NULL);
+         }
          close(newsockfd);     
       }else if(proto == UDP){
          read_from_sock(sockfd, UDP, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
          meta_data = (uint8_t*)malloc(meta_data_bytes_length);
          read_from_sock(sockfd, UDP, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
          read_from_sock(sockfd, UDP, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-         buffer = (uint8_t*)malloc(bytes_length);
-         read_from_sock(sockfd, UDP, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+         if(bytes_length > 0){
+            buffer = (uint8_t*)malloc(bytes_length);
+            read_from_sock(sockfd, UDP, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+         }
       }else{ printf("Protocol is not supported\n"); return;}
-      blob* tmp = new_blob_and_copy_data(0, bytes_length, buffer);
-      free(buffer);  
+      if(bytes_length > 0){
+         tmp = new_blob_and_copy_data(0, bytes_length, buffer);
+         free(buffer);  
+      }else{
+         tmp = new_empty_blob(0);
+      }
       handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
       free(meta_data);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
