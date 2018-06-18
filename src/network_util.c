@@ -183,6 +183,50 @@ void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto 
    close(sockfd);
 }
 
+void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno){
+   void* meta_data;
+   uint32_t meta_data_bytes_length;
+   meta_data = meta;
+   meta_data_bytes_length = meta_size;
+   int sockfd;
+#if IPV4_TASK
+   struct sockaddr_in serv_addr;
+   memset(&serv_addr, 0, sizeof(serv_addr));
+   serv_addr.sin_family = AF_INET;
+   serv_addr.sin_port = htons(portno);
+   inet_pton(AF_INET, dest_ip, &serv_addr.sin_addr);
+#elif IPV6_TASK//IPV4_TASK
+   struct sockaddr_in6 serv_addr;
+   memset(&serv_addr, 0, sizeof(serv_addr));
+   serv_addr.sin6_family = AF_INET6;
+   serv_addr.sin6_port = htons(portno);
+   inet_pton(AF_INET6, dest_ip, &serv_addr.sin6_addr);
+#endif//IPV4_TASK
+
+   if(proto == TCP) {
+#if IPV4_TASK
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+#elif IPV6_TASK//IPV4_TASK
+      sockfd = socket(AF_INET6, SOCK_STREAM, 0);
+#endif//IPV4_TASK
+      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+      printf("ERROR connecting\n");
+   } else if (proto == UDP) {
+#if IPV4_TASK
+      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+#elif IPV6_TASK//IPV4_TASK
+      sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+#endif//IPV4_TASK
+   }
+   else {printf("Control protocol is not supported\n"); return;}
+   if (sockfd < 0) printf("ERROR opening socket\n");
+
+   write_to_sock(sockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+   write_to_sock(sockfd, proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+
+   close(sockfd);
+}
+
 static inline uint32_t look_up_handler_table(char* name, const char* handler_name[], uint32_t handler_num){
    uint32_t handler_id = 0;
    for(handler_id = 0; handler_id < handler_num; handler_id++){
