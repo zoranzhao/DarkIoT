@@ -41,6 +41,73 @@ int service_init(int portno, ctrl_proto proto){
    return sockfd;
 }
 
+service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno){
+   int sockfd;
+#if IPV4_TASK
+   struct sockaddr_in serv_addr;
+   memset(&serv_addr, 0, sizeof(serv_addr));
+   serv_addr.sin_family = AF_INET;
+   serv_addr.sin_port = htons(portno);
+   inet_pton(AF_INET, dest_ip, &serv_addr.sin_addr);
+/*lwIP implementation*/
+/*
+   ip4addr_aton(dest_ip, ip_2_ip4(&dstaddr));
+   inet_addr_from_ip4addr(&serv_addr.sin_addr, ip_2_ip4(&dstaddr));
+*/
+#elif IPV6_TASK//IPV4_TASK
+   struct sockaddr_in6 serv_addr;
+   memset(&serv_addr, 0, sizeof(serv_addr));
+   serv_addr.sin6_family = AF_INET6;
+   serv_addr.sin6_port = htons(portno);
+   inet_pton(AF_INET6, dest_ip, &serv_addr.sin6_addr);
+/*lwIP implementation*/
+/*
+   ip6addr_aton(dest_ip, ip_2_ip6(&dstaddr));
+   inet6_addr_from_ip6addr(&serv_addr.sin6_addr, ip_2_ip6(&dstaddr));
+*/
+#endif//IPV4_TASK
+   if(proto == TCP) {
+#if IPV4_TASK
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+#elif IPV6_TASK//IPV4_TASK
+      sockfd = socket(AF_INET6, SOCK_STREAM, 0);
+#endif//IPV4_TASK
+      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+      printf("ERROR connecting\n");
+   } else if (proto == UDP) {
+#if IPV4_TASK
+      sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+#elif IPV6_TASK//IPV4_TASK
+      sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+#endif//IPV4_TASK
+   }
+   else {printf("Control protocol is not supported\n"); return NULL;}
+   if (sockfd < 0) printf("ERROR opening socket\n");
+
+   service_conn* conn = (service_conn*)malloc(sizeof(service_conn)); 
+   conn -> sockfd = sockfd;
+   conn -> proto = proto;
+   #if IPV4_TASK
+   conn -> serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+   conn -> serv_addr_ptr -> sin_family = AF_INET;
+   conn -> serv_addr_ptr -> sin_port = htons(portno);
+   inet_pton(AF_INET, dest_ip, &(conn -> serv_addr_ptr -> sin_addr));
+   #elif IPV6_TASK/*IPV4_TASK*/
+   conn -> serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
+   conn -> serv_addr_ptr -> sin6_family = AF_INET6;
+   conn -> serv_addr_ptr -> sin6_port = htons(portno);
+   inet_pton(AF_INET6, dest_ip, &(conn -> serv_addr_ptr -> sin6_addr));
+   #endif/*IPV4_TASK*/   
+
+   return conn;
+}
+
+void close_service_connection(service_conn* conn){
+   close(conn -> sockfd);
+   free(conn -> serv_addr_ptr);
+   free(conn);
+}
+
 void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno){
    void* data;
    uint32_t bytes_length;

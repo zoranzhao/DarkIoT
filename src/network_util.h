@@ -18,12 +18,26 @@ typedef enum proto{
    TCP,
    UDP
 } ctrl_proto;
-int service_init(int portno, ctrl_proto proto);
 
+typedef struct service_connection{
+   int sockfd;
+   ctrl_proto proto;
+   #if IPV4_TASK
+   struct sockaddr_in* serv_addr_ptr;
+   #elif IPV6_TASK/*IPV4_TASK*/
+   struct sockaddr_in6* serv_addr_ptr;
+   #endif/*IPV4_TASK*/   
+} service_conn;
+
+
+service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno);
+void close_service_connection(service_conn* conn);
 void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno);
+blob* send_request_and_recv_data(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno);
 void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 
+int service_init(int portno, ctrl_proto proto);
 blob* recv_data(int sockfd, ctrl_proto proto);
 void recv_meta_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
 
