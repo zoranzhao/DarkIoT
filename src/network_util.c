@@ -191,7 +191,7 @@ static inline uint32_t look_up_handler_table(char* name, const char* handler_nam
    return handler_id;
 }
 
-void recv_data_with_handlers(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
+void recv_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
    socklen_t clilen;
 
 #if IPV4_TASK

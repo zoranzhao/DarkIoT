@@ -19,12 +19,12 @@ typedef enum proto{
    UDP
 } ctrl_proto;
 int service_init(int portno, ctrl_proto proto);
-blob* recv_data(int sockfd, ctrl_proto proto);
-void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 
-void recv_data_with_handlers(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
+void send_request(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno);
+void send_data(blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, ctrl_proto proto, const char *dest_ip, int portno);
 
-
+blob* recv_data(int sockfd, ctrl_proto proto);
+void recv_and_handle_data(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
 
 #endif
