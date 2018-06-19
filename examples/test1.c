@@ -62,41 +62,56 @@ void* serve_sync(void* tmp){
 void server_thread(void *arg){
    int mapreduce_service = service_init(8080, TCP);
    printf("Service number is %d\n", mapreduce_service);
+
    blob* temp = recv_request(mapreduce_service, TCP);
    write_blob_to_file("out1.jpg", temp);
    free_blob(temp);
+
    temp = recv_request(mapreduce_service, TCP);
    write_blob_to_file("out2.jpg", temp);
    free_blob(temp);
-   //temp = recv_request(mapreduce_service, TCP);
-   //write_blob_to_file("out3.jpg", temp);
-   //free_blob(temp);
 
-   //const char* request_types[]={"steal", "result", "sync"};
-   //void* (*handlers[])(void*) = {serve_steal, serve_result, serve_sync};
+   temp = recv_request(mapreduce_service, TCP);
+   write_blob_to_file("out3.jpg", temp);
+   free_blob(temp);
 
-   //start_service(mapreduce_service, TCP, request_types, 3, handlers);
-   
+   const char* request_types[]={"steal", "result", "sync"};
+   void* (*handlers[])(void*) = {serve_steal, serve_result, serve_sync};
+   start_service(mapreduce_service, TCP, request_types, 3, handlers);
 }
 
 
 void client_thread(void *arg){
    blob* temp = write_file_to_blob("test.jpg");
+
    service_conn* conn = connect_service(TCP, "10.145.80.46", 8080);
    send_data(temp, conn);
    close_service_connection(conn);
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_data(temp, conn);
-   //send_data(temp, conn);
-   free_blob(temp);
+   close_service_connection(conn);
 
-   //char request1[20] = "steal";
-   //char request2[20] = "result";
-   //char request3[20] = "sync";
-   //send_request(request1, 20, conn);
-   //send_request(request2, 20, conn);
-   //send_request(request3, 20, conn);
+   conn = connect_service(TCP, "10.145.80.46", 8080);
+   send_data(temp, conn);
+   close_service_connection(conn);
+
+   free_blob(temp);
+   char request1[20] = "steal";
+   char request2[20] = "result";
+   char request3[20] = "sync";
+
+   conn = connect_service(TCP, "10.145.80.46", 8080);
+   send_request(request1, 20, conn);
+   close_service_connection(conn);
+
+   conn = connect_service(TCP, "10.145.80.46", 8080);
+   send_request(request2, 20, conn);
+   close_service_connection(conn);
+
+   conn = connect_service(TCP, "10.145.80.46", 8080);
+   send_request(request3, 20, conn);
+   close_service_connection(conn);
 
 }
 
