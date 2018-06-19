@@ -32,9 +32,12 @@ typedef struct service_connection{
 
 service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno);
 void close_service_connection(service_conn* conn);
-void send_data(blob *temp, service_conn* conn);
 void send_request(void* meta, uint32_t meta_size, service_conn* conn);
 void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, service_conn* conn);
+
+
+blob* recv_data(service_conn* conn);
+void send_data(blob *temp, service_conn* conn);
 /*
 blob* send_request_and_recv_data(void* meta, uint32_t meta_size, ctrl_proto proto, const char *dest_ip, int portno);
 */
