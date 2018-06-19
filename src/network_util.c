@@ -113,9 +113,25 @@ void send_data(blob *temp, service_conn* conn){
    uint32_t bytes_length;
    data = temp->data;
    bytes_length = temp->size;
-
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+}
+
+blob* recv_data(service_conn* conn){
+   uint8_t* buffer;
+   uint32_t bytes_length;
+   socklen_t addr_len;
+#if IPV4_TASK
+   addr_len = sizeof(struct sockaddr_in);
+#elif IPV6_TASK//IPV4_TASK
+   addr_len = sizeof(struct sockaddr_in6);
+#endif//IPV4_TASK
+   read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   buffer = (uint8_t*)malloc(bytes_length);
+   read_from_sock(conn->sockfd, conn->proto, buffer, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   blob* tmp = new_blob_and_copy_data(0, bytes_length, buffer);
+   free(buffer);
+   return tmp;
 }
 
 void send_request(void* meta, uint32_t meta_size, service_conn* conn){
@@ -244,7 +260,7 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
 #define UDP_TRANS_SIZE 512
 static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, struct sockaddr *from, socklen_t *fromlen){
    uint32_t bytes_read = 0;
-   int32_t n;
+   int32_t n = 0;
    while (bytes_read < bytes_length){
       if(proto == TCP){
          n = recv(sock, buffer + bytes_read, bytes_length - bytes_read, 0);
@@ -260,7 +276,7 @@ static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, u
 
 static inline void write_to_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, const struct sockaddr *to, socklen_t tolen){
    uint32_t bytes_written = 0;
-   int32_t n;
+   int32_t n = 0;
    while (bytes_written < bytes_length) {
       if(proto == TCP){
          n = send(sock, buffer + bytes_written, bytes_length - bytes_written, 0);
