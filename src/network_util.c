@@ -220,26 +220,22 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       uint32_t handler_id = 0;
       if(proto == TCP){
          newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-         if (newsockfd < 0) {printf("ERROR on accept\n");return;}
-         read_from_sock(newsockfd, TCP, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), NULL, NULL);
-         meta_data = (uint8_t*)malloc(meta_data_bytes_length);
-         read_from_sock(newsockfd, TCP, meta_data, meta_data_bytes_length, NULL, NULL);
-         read_from_sock(newsockfd, TCP, (uint8_t*)&bytes_length, sizeof(bytes_length), NULL, NULL);
-         if(bytes_length > 0){
-            buffer = (uint8_t*)malloc(bytes_length);
-            read_from_sock(newsockfd, TCP, buffer, bytes_length, NULL, NULL);
-         }
-         close(newsockfd);     
       }else if(proto == UDP){
-         read_from_sock(sockfd, UDP, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-         meta_data = (uint8_t*)malloc(meta_data_bytes_length);
-         read_from_sock(sockfd, UDP, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-         read_from_sock(sockfd, UDP, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-         if(bytes_length > 0){
-            buffer = (uint8_t*)malloc(bytes_length);
-            read_from_sock(sockfd, UDP, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-         }
-      }else{ printf("Protocol is not supported\n"); return;}
+         newsockfd = sockfd;
+      }else{ 
+         printf("Protocol is not supported\n"); 
+         return;
+      }
+
+      if (newsockfd < 0) {printf("ERROR on accept\n");return;}
+      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
+      meta_data = (uint8_t*)malloc(meta_data_bytes_length);
+      read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+      read_from_sock(newsockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
+      if(bytes_length > 0){
+         buffer = (uint8_t*)malloc(bytes_length);
+         read_from_sock(newsockfd, proto, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+      }
       if(bytes_length > 0){
          tmp = new_blob_and_copy_data(0, bytes_length, buffer);
          free(buffer);  
@@ -252,6 +248,12 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       /*Call the handler on recved data*/
       (handlers[handler_id])(tmp);
       free_blob(tmp);  
+
+
+      if(proto == TCP){
+         close(newsockfd);     
+      }
+
    }
    /*This function is supposed to be called one time only.*/
    close(sockfd);
