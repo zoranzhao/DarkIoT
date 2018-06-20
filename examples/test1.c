@@ -44,19 +44,22 @@ void producer(void *arg){
 }
 
 
-void* serve_steal(void* tmp){
-    printf("serve_steal ... ... \n");
-    return NULL;
+void* serve_steal(void* srv_conn){
+   //service_conn *conn = (service_conn *)srv_conn;
+   printf("serve_steal ... ... \n");
+   return NULL;
 }
 
-void* serve_result(void* tmp){
-    printf("serve_result ... ... \n");
-    return NULL;
+void* serve_result(void* srv_conn){
+   //service_conn *conn = (service_conn *)srv_conn;
+   printf("serve_result ... ... \n");
+   return NULL;
 }
 
-void* serve_sync(void* tmp){
-    printf("serve_sync ... ... \n");
-    return NULL;
+void* serve_sync(void* srv_conn){
+   //service_conn *conn = (service_conn *)srv_conn;
+   printf("serve_sync ... ... \n");
+   return NULL;
 }
 
 void server_thread(void *arg){
