@@ -46,6 +46,7 @@ void producer(void *arg){
 void* serve_steal(void* conn){
    printf("serve_steal ... ... \n");
    blob* temp = recv_data((service_conn *)conn);
+   send_data(temp, conn);
    write_blob_to_file("out4.jpg", temp);
    free_blob(temp);
    return NULL;
@@ -54,6 +55,7 @@ void* serve_steal(void* conn){
 void* serve_result(void* conn){
    printf("serve_result ... ... \n");
    blob* temp = recv_data((service_conn *)conn);
+   send_data(temp, conn);
    write_blob_to_file("out5.jpg", temp);
    free_blob(temp);
    return NULL;
@@ -62,6 +64,7 @@ void* serve_result(void* conn){
 void* serve_sync(void* conn){
    printf("serve_sync ... ... \n");
    blob* temp = recv_data((service_conn *)conn);
+   send_data(temp, conn);
    write_blob_to_file("out6.jpg", temp);
    free_blob(temp);
    return NULL;
@@ -71,15 +74,15 @@ void server_thread(void *arg){
    int mapreduce_service = service_init(8080, TCP);
    printf("Service number is %d\n", mapreduce_service);
 
-   blob* temp = recv_request(mapreduce_service, TCP);
+   blob* temp = start_service_and_return(mapreduce_service, TCP);
    write_blob_to_file("out1.jpg", temp);
    free_blob(temp);
 
-   temp = recv_request(mapreduce_service, TCP);
+   temp = start_service_and_return(mapreduce_service, TCP);
    write_blob_to_file("out2.jpg", temp);
    free_blob(temp);
 
-   temp = recv_request(mapreduce_service, TCP);
+   temp = start_service_and_return(mapreduce_service, TCP);
    write_blob_to_file("out3.jpg", temp);
    free_blob(temp);
 
@@ -87,7 +90,6 @@ void server_thread(void *arg){
    void* (*handlers[])(void*) = {serve_steal, serve_result, serve_sync};
    start_service(mapreduce_service, TCP, request_types, 3, handlers);
 }
-
 
 void client_thread(void *arg){
    blob* temp = write_file_to_blob("test.jpg");
@@ -104,29 +106,37 @@ void client_thread(void *arg){
    send_data(temp, conn);
    close_service_connection(conn);
 
-
    char request1[20] = "steal";
    char request2[20] = "result";
    char request3[20] = "sync";
 
+   blob* recv_temp;
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request1, 20, conn);
    send_data(temp, conn);
+   recv_temp = recv_data(conn);
+   write_blob_to_file("out7.jpg", recv_temp);
+   free_blob(recv_temp);
    close_service_connection(conn);
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request2, 20, conn);
    send_data(temp, conn);
+   recv_temp = recv_data(conn);
+   write_blob_to_file("out8.jpg", recv_temp);
+   free_blob(recv_temp);
    close_service_connection(conn);
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request3, 20, conn);
    send_data(temp, conn);
+   recv_temp = recv_data(conn);
+   write_blob_to_file("out9.jpg", recv_temp);
+   free_blob(recv_temp);
    close_service_connection(conn);
 
    free_blob(temp);
 }
-
 
 int main(){
    q = new_queue(20); 
