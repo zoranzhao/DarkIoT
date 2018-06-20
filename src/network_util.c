@@ -9,21 +9,21 @@ static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const
 static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in6* addr, int portno){
 #endif/*IPV4_TASK*/ 
    service_conn* conn = (service_conn*)malloc(sizeof(service_conn)); 
-   conn -> sockfd = sockfd;
-   conn -> proto = proto;
+   conn->sockfd = sockfd;
+   conn->proto = proto;
    if(addr!=NULL){
-      conn -> serv_addr_ptr = addr;
+      conn->serv_addr_ptr = addr;
    }else{
       #if IPV4_TASK
-      conn -> serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
-      conn -> serv_addr_ptr -> sin_family = AF_INET;
-      conn -> serv_addr_ptr -> sin_port = htons(portno);
-      inet_pton(AF_INET, dest_ip, &(conn -> serv_addr_ptr -> sin_addr));
+      conn->serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+      conn->serv_addr_ptr->sin_family = AF_INET;
+      conn->serv_addr_ptr->sin_port = htons(portno);
+      inet_pton(AF_INET, dest_ip, &(conn->serv_addr_ptr->sin_addr));
       #elif IPV6_TASK/*IPV4_TASK*/
-      conn -> serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
-      conn -> serv_addr_ptr -> sin6_family = AF_INET6;
-      conn -> serv_addr_ptr -> sin6_port = htons(portno);
-      inet_pton(AF_INET6, dest_ip, &(conn -> serv_addr_ptr -> sin6_addr));
+      conn->serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
+      conn->serv_addr_ptr->sin6_family = AF_INET6;
+      conn->serv_addr_ptr->sin6_port = htons(portno);
+      inet_pton(AF_INET6, dest_ip, &(conn->serv_addr_ptr->sin6_addr));
       #endif/*IPV4_TASK*/ 
    }
    return conn; 
@@ -116,8 +116,8 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
 }
 
 void close_service_connection(service_conn* conn){
-   close(conn -> sockfd);
-   free(conn -> serv_addr_ptr);
+   close(conn->sockfd);
+   free(conn->serv_addr_ptr);
    free(conn);
 }
 
@@ -148,28 +148,10 @@ blob* recv_data(service_conn* conn){
 }
 
 void send_request(void* meta, uint32_t meta_size, service_conn* conn){
-   blob* temp = new_empty_blob(0);
-   send_data_with_meta(meta, meta_size, temp, conn);
+   blob* temp = new_blob_and_copy_data(0, meta_size, meta);
+   send_data(temp, conn);
    free_blob(temp);  
 }
-
-void send_data_with_meta(void* meta, uint32_t meta_size, blob *temp, service_conn* conn){
-   void* data;
-   uint32_t bytes_length;
-   void* meta_data;
-   uint32_t meta_data_bytes_length;
-   data = temp->data;
-   meta_data = meta;
-   bytes_length = temp->size;
-   meta_data_bytes_length = meta_size;
-
-   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
-   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
-   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
-   if(bytes_length > 0)
-     write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
-}
-
 
 static inline uint32_t look_up_handler_table(char* name, const char* handler_name[], uint32_t handler_num){
    uint32_t handler_id = 0;
@@ -249,29 +231,10 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
 
-      
-/*
-      blob* tmp;
-      uint32_t bytes_length;
-      uint8_t* buffer = NULL;
-      read_from_sock(newsockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      if(bytes_length > 0){
-         buffer = (uint8_t*)malloc(bytes_length);
-         read_from_sock(newsockfd, proto, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-      }
-      if(bytes_length > 0){
-         tmp = new_blob_and_copy_data(0, bytes_length, buffer);
-         free(buffer);  
-      }else{
-         tmp = new_empty_blob(0);
-      }
-      free_blob(tmp);  
-*/
 
       /*Calling handler on the connection session*/
       (handlers[handler_id])(conn);
       /*Calling handler on the connection session*/
-
 
 
       /*Close connection*/
