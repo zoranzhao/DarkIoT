@@ -214,21 +214,16 @@ blob* recv_request(int sockfd, ctrl_proto proto){
 
 void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
    socklen_t clilen;
-
 #if IPV4_TASK
    struct sockaddr_in cli_addr;
 #elif IPV6_TASK//IPV4_TASK
    struct sockaddr_in6 cli_addr;
 #endif//IPV4_TASK
-
    int newsockfd;
    clilen = sizeof(cli_addr);
-   uint32_t bytes_length;
-   uint8_t* buffer = NULL;
    uint32_t meta_data_bytes_length;
    uint8_t* meta_data;
-   blob* tmp;
-
+   service_conn* conn;
    while(1){
       uint32_t handler_id = 0;
       /*Accept incoming connection*/
@@ -241,12 +236,24 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
          return;
       }
       if (newsockfd < 0) {printf("ERROR on accept\n");return;}
+      conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
 
 
+      /*Recv meta control data and pick up the correct handler*/
       read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
       meta_data = (uint8_t*)malloc(meta_data_bytes_length);
       read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
+      free(meta_data);
+      if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
+      /*Recv meta control data and pick up the correct handler*/
+
+      
+/*
+      blob* tmp;
+      uint32_t bytes_length;
+      uint8_t* buffer = NULL;
       read_from_sock(newsockfd, proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
       if(bytes_length > 0){
          buffer = (uint8_t*)malloc(bytes_length);
@@ -258,11 +265,13 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       }else{
          tmp = new_empty_blob(0);
       }
-      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
-      free(meta_data);
-      if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
-      (handlers[handler_id])(tmp);
       free_blob(tmp);  
+*/
+
+      /*Calling handler on the connection session*/
+      (handlers[handler_id])(conn);
+      /*Calling handler on the connection session*/
+
 
 
       /*Close connection*/
