@@ -192,7 +192,6 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       }
       /*Close connection*/
    }
-   close(sockfd);
 }
 
 void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
@@ -244,6 +243,7 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       }
       /*Close connection*/
    }
+   /*This should not be called, users must explicitly call void close_service_connection(conn)*/
    close(sockfd);
 }
 
