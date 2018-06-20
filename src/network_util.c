@@ -161,7 +161,7 @@ static inline uint32_t look_up_handler_table(char* name, const char* handler_nam
    return handler_id;
 }
 
-blob* recv_request(int sockfd, ctrl_proto proto){
+blob* start_service_and_return(int sockfd, ctrl_proto proto){
    socklen_t clilen;
 
 #if IPV4_TASK
