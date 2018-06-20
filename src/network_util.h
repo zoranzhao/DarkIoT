@@ -37,6 +37,6 @@ blob* recv_data(service_conn* conn);
 void send_data(blob *temp, service_conn* conn);
 
 int service_init(int portno, ctrl_proto proto);
-blob* start_service_and_return(int sockfd, ctrl_proto proto);
+void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*), uint32_t times);
 void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
 #endif

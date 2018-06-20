@@ -141,37 +141,58 @@ static inline uint32_t look_up_handler_table(char* name, const char* handler_nam
    return handler_id;
 }
 
-blob* start_service_and_return(int sockfd, ctrl_proto proto){
+void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*), uint32_t times){
    socklen_t clilen;
-
 #if IPV4_TASK
    struct sockaddr_in cli_addr;
 #elif IPV6_TASK//IPV4_TASK
    struct sockaddr_in6 cli_addr;
 #endif//IPV4_TASK
-
    int newsockfd;
    clilen = sizeof(cli_addr);
-   uint32_t bytes_length;
-   uint8_t* buffer;
+   uint32_t meta_data_bytes_length;
+   uint8_t* meta_data;
+   service_conn* conn;
 
-   if(proto == TCP){
-      newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-      if (newsockfd < 0) {printf("ERROR on accept\n");return NULL;}
-      read_from_sock(newsockfd, TCP, (uint8_t*)&bytes_length, sizeof(bytes_length), NULL, NULL);
-      buffer = (uint8_t*)malloc(bytes_length);
-      read_from_sock(newsockfd, TCP, buffer, bytes_length, NULL, NULL);
-      close(newsockfd);   
-   }else if(proto == UDP){
-      read_from_sock(sockfd, UDP, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      buffer = (uint8_t*)malloc(bytes_length);
-      read_from_sock(sockfd, UDP, buffer, bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-   }else{ printf("Protocol is not supported\n"); return NULL;}
-   blob* tmp = new_blob_and_copy_data(0, bytes_length, buffer);
-   free(buffer);
-   /*This function is supposed to be called multiple times.*/
-   /*close(sockfd);*/
-   return tmp;
+   uint32_t srv_times;
+   for(srv_times = 0; srv_times < times; srv_times ++){
+      uint32_t handler_id = 0;
+      /*Accept incoming connection*/
+      if(proto == TCP){
+         newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+      }else if(proto == UDP){
+         newsockfd = sockfd;
+      }else{ 
+         printf("Protocol is not supported\n"); 
+         return;
+      }
+      if (newsockfd < 0) {printf("ERROR on accept\n");return;}
+      conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
+      /*Accept incoming connection*/
+
+
+      /*Recv meta control data and pick up the correct handler*/
+      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
+      meta_data = (uint8_t*)malloc(meta_data_bytes_length);
+      read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
+      free(meta_data);
+      if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
+      /*Recv meta control data and pick up the correct handler*/
+
+
+      /*Calling handler on the connection session*/
+      (handlers[handler_id])(conn);
+      /*Calling handler on the connection session*/
+
+
+      /*Close connection*/
+      if(proto == TCP){
+         close(newsockfd);     
+      }
+      /*Close connection*/
+   }
+   close(sockfd);
 }
 
 void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*)){
