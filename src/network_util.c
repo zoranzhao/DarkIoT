@@ -2,32 +2,12 @@
 
 static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, struct sockaddr *from, socklen_t *fromlen);
 static inline void write_to_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, const struct sockaddr *to, socklen_t tolen);
-
 #if IPV4_TASK
-static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in* addr, int portno){
+static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in* addr, int portno);
 #elif IPV6_TASK/*IPV4_TASK*/
-static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in6* addr, int portno){
+static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in6* addr, int portno);
 #endif/*IPV4_TASK*/ 
-   service_conn* conn = (service_conn*)malloc(sizeof(service_conn)); 
-   conn->sockfd = sockfd;
-   conn->proto = proto;
-   if(addr!=NULL){
-      conn->serv_addr_ptr = addr;
-   }else{
-      #if IPV4_TASK
-      conn->serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
-      conn->serv_addr_ptr->sin_family = AF_INET;
-      conn->serv_addr_ptr->sin_port = htons(portno);
-      inet_pton(AF_INET, dest_ip, &(conn->serv_addr_ptr->sin_addr));
-      #elif IPV6_TASK/*IPV4_TASK*/
-      conn->serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
-      conn->serv_addr_ptr->sin6_family = AF_INET6;
-      conn->serv_addr_ptr->sin6_port = htons(portno);
-      inet_pton(AF_INET6, dest_ip, &(conn->serv_addr_ptr->sin6_addr));
-      #endif/*IPV4_TASK*/ 
-   }
-   return conn; 
-}
+
 
 int service_init(int portno, ctrl_proto proto){
    int sockfd;
@@ -280,3 +260,28 @@ static inline void write_to_sock(int sock, ctrl_proto proto, uint8_t* buffer, ui
    }
 }
 
+#if IPV4_TASK
+static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in* addr, int portno){
+#elif IPV6_TASK/*IPV4_TASK*/
+static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in6* addr, int portno){
+#endif/*IPV4_TASK*/ 
+   service_conn* conn = (service_conn*)malloc(sizeof(service_conn)); 
+   conn->sockfd = sockfd;
+   conn->proto = proto;
+   if(addr!=NULL){
+      conn->serv_addr_ptr = addr;
+   }else{
+      #if IPV4_TASK
+      conn->serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+      conn->serv_addr_ptr->sin_family = AF_INET;
+      conn->serv_addr_ptr->sin_port = htons(portno);
+      inet_pton(AF_INET, dest_ip, &(conn->serv_addr_ptr->sin_addr));
+      #elif IPV6_TASK/*IPV4_TASK*/
+      conn->serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
+      conn->serv_addr_ptr->sin6_family = AF_INET6;
+      conn->serv_addr_ptr->sin6_port = htons(portno);
+      inet_pton(AF_INET6, dest_ip, &(conn->serv_addr_ptr->sin6_addr));
+      #endif/*IPV4_TASK*/ 
+   }
+   return conn; 
+}
