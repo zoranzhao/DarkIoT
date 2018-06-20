@@ -43,22 +43,27 @@ void producer(void *arg){
    free_blob(b5);
 }
 
-
-void* serve_steal(void* srv_conn){
-   //service_conn *conn = (service_conn *)srv_conn;
+void* serve_steal(void* conn){
    printf("serve_steal ... ... \n");
+   blob* temp = recv_data((service_conn *)conn);
+   write_blob_to_file("out4.jpg", temp);
+   free_blob(temp);
    return NULL;
 }
 
-void* serve_result(void* srv_conn){
-   //service_conn *conn = (service_conn *)srv_conn;
+void* serve_result(void* conn){
    printf("serve_result ... ... \n");
+   blob* temp = recv_data((service_conn *)conn);
+   write_blob_to_file("out5.jpg", temp);
+   free_blob(temp);
    return NULL;
 }
 
-void* serve_sync(void* srv_conn){
-   //service_conn *conn = (service_conn *)srv_conn;
+void* serve_sync(void* conn){
    printf("serve_sync ... ... \n");
+   blob* temp = recv_data((service_conn *)conn);
+   write_blob_to_file("out6.jpg", temp);
+   free_blob(temp);
    return NULL;
 }
 
@@ -99,23 +104,27 @@ void client_thread(void *arg){
    send_data(temp, conn);
    close_service_connection(conn);
 
-   free_blob(temp);
+
    char request1[20] = "steal";
    char request2[20] = "result";
    char request3[20] = "sync";
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request1, 20, conn);
+   send_data(temp, conn);
    close_service_connection(conn);
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request2, 20, conn);
+   send_data(temp, conn);
    close_service_connection(conn);
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request3, 20, conn);
+   send_data(temp, conn);
    close_service_connection(conn);
 
+   free_blob(temp);
 }
 
 
