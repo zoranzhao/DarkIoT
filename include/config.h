@@ -16,8 +16,11 @@
 
 #define DEBUG_DIST 0
 #define CLI_NUM 6
-#define CUR_CLI 0
 
-extern char* addr_list[CLI_NUM];/*Defined in config.c*/
+#include <stdint.h>
+/*Global configurations defined in config.c*/
+extern char* addr_list[CLI_NUM];
+extern uint32_t this_cli_id;
+extern uint32_t total_cli_num;
 
 #endif
