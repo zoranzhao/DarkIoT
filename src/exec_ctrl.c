@@ -32,7 +32,7 @@ void exec_barrier(int portno, ctrl_proto proto)
    void* (*handlers[])(void*) = {start_gateway, start_edge};
    int service = service_init(portno, proto);
    start_service_for_n_times(service, proto, request_types, 2, handlers, 1);
-   close(service);
+   close_service(service);
 }
 
 

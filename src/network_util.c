@@ -247,6 +247,10 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
    close(sockfd);
 }
 
+void close_service(int sockfd){
+   close(sockfd);
+}
+
 #define UDP_TRANS_SIZE 512
 static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, struct sockaddr *from, socklen_t *fromlen){
    uint32_t bytes_read = 0;
