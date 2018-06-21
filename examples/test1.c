@@ -84,7 +84,6 @@ void server_thread(void *arg){
    start_service_for_n_times(mapreduce_service, TCP, request_types, 3, handlers, 1);
    printf("Service 3 is returned \n");
 
-
 /*
    start_service(mapreduce_service, TCP, request_types, 3, handlers);
 */   
@@ -98,10 +97,8 @@ void client_thread(void *arg){
    char request2[20] = "result";
    char request3[20] = "sync";
 
-
    service_conn* conn;
    blob* recv_temp;
-
 
    conn = connect_service(TCP, "10.145.80.46", 8080);
    send_request(request1, 20, conn);
