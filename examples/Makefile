@@ -29,12 +29,14 @@ CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectoriz
 endif
 
 CFLAGS+=$(OPTS)
-EXECOBJ = test1.o
+EXECOBJ = test1.o ../libdarkiot.so
 DEPS = $(wildcard */*.h) Makefile
 
 all: $(EXEC)
 
 $(EXEC): $(EXECOBJ)
+	$(MAKE) -C ../ clean
+	$(MAKE) -C ../
 	$(CC) $(COMMON) $(CFLAGS) $^ -o $@  $(LDLIB) $(LDFLAGS)
 
 $(OBJDIR)%.o: %.c $(DEPS)
