@@ -17,6 +17,8 @@
 #include "thread_util.h"
 #include "data_blob.h"
 #include "network_util.h"
+#include "config.h"
+#include "exec_ctrl.h"
 
 #endif
 
