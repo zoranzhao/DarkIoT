@@ -9,7 +9,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#define IPV4_TASK 0
+#include <errno.h>
+#define IPV4_TASK 1
 #define IPV6_TASK !(IPV4_TASK)
 
 #include "data_blob.h"
