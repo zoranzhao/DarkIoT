@@ -41,7 +41,7 @@ $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
 
 test:
-	./test1
+	./test1 ${ARGS}
 
 .PHONY: clean
 
