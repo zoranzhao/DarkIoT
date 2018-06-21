@@ -30,16 +30,19 @@ typedef struct service_connection{
    #endif/*IPV4_TASK*/   
 } service_conn;
 
+/*Networking API on service client side*/
 service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno);
 void close_service_connection(service_conn* conn);
-
 void send_request(void* meta, uint32_t meta_size, service_conn* conn);
-blob* recv_data(service_conn* conn);
-void send_data(blob *temp, service_conn* conn);
 
+/*Networking API on service server side*/
 int service_init(int portno, ctrl_proto proto);
 void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*), uint32_t times);
 void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uint32_t handler_num, void* (*handlers[])(void*));
 void close_service(int sockfd);
+
+/*Data exchanging API on both sides*/
+blob* recv_data(service_conn* conn);
+void send_data(blob *temp, service_conn* conn);
 
 #endif
