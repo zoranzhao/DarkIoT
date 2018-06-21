@@ -88,7 +88,7 @@ void server_thread(void *arg){
    start_service(mapreduce_service, TCP, request_types, 3, handlers);
 */   
    start_service_for_n_times(mapreduce_service, TCP, request_types, 3, handlers, 3);
-   close(mapreduce_service);
+   close_service(mapreduce_service);
 }
 
 void client_thread(void *arg){
