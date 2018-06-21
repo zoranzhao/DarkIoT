@@ -4,6 +4,7 @@
 #include "thread_util.h"
 #include "thread_safe_queue.h"
 #include "network_util.h"
+#include "config.h"
 
 void exec_barrier(int portno, ctrl_proto proto);
 void exec_start_gateway(int portno, ctrl_proto proto);

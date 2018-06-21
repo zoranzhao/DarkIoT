@@ -1,5 +1,4 @@
 #include "exec_ctrl.h"
-#include "config.h"
 
 void exec_start_gateway(int portno, ctrl_proto proto){
     char request_type[20] = "start_gateway";
@@ -7,7 +6,6 @@ void exec_start_gateway(int portno, ctrl_proto proto){
     send_request(request_type, 20, conn);
     close_service_connection(conn);
 }
-
 
 void* start_gateway(void* conn){
    char request_type[20] = "start_edge";
@@ -36,4 +34,5 @@ void exec_barrier(int portno, ctrl_proto proto)
    start_service_for_n_times(service, proto, request_types, 2, handlers, 1);
    close(service);
 }
+
 
