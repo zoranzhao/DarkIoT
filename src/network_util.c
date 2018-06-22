@@ -104,8 +104,11 @@ void close_service_connection(service_conn* conn){
 void send_data(blob *temp, service_conn* conn){
    void* data;
    uint32_t bytes_length;
+   int32_t id;
    data = temp->data;
    bytes_length = temp->size;
+   id = temp->id;
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
 }
@@ -113,16 +116,18 @@ void send_data(blob *temp, service_conn* conn){
 blob* recv_data(service_conn* conn){
    uint8_t* buffer;
    uint32_t bytes_length;
+   int32_t id;
    socklen_t addr_len;
 #if IPV4_TASK
    addr_len = sizeof(struct sockaddr_in);
 #elif IPV6_TASK//IPV4_TASK
    addr_len = sizeof(struct sockaddr_in6);
 #endif//IPV4_TASK
+   read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    buffer = (uint8_t*)malloc(bytes_length);
    read_from_sock(conn->sockfd, conn->proto, buffer, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
-   blob* tmp = new_blob_and_copy_data(0, bytes_length, buffer);
+   blob* tmp = new_blob_and_copy_data(id, bytes_length, buffer);
    free(buffer);
    return tmp;
 }
