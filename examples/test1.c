@@ -145,13 +145,22 @@ void client_thread(void *arg){
    free_blob(temp);
 }
 
+void test_queue_remove(int argc, char **argv){
+   q = new_queue(20); 
+   producer(NULL);
+   remove_by_id(q, 1);
+   remove_by_id(q, 3);
+   remove_by_id(q, 5);
+   producer(NULL);
+   consumer(NULL);
+}
+
 void test_queue(int argc, char **argv){
    q = new_queue(20); 
    sys_thread_t t1 = sys_thread_new("consumer", consumer, NULL, 0, 0);
    sys_thread_t t2 = sys_thread_new("producer", producer, NULL, 0, 0);
    sys_thread_join(t1);
    sys_thread_join(t2);
-   
 }
 
 void test_network_api(int argc, char **argv){
