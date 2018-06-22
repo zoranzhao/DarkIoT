@@ -13,6 +13,12 @@
 #define IPV4_TASK 1
 #define IPV6_TASK !(IPV4_TASK)
 
+#if IPV4_TASK
+#define ADDRSTRLEN INET_ADDRSTRLEN
+#elif IPV6_TASK/*IPV4_TASK*/
+#define ADDRSTRLEN INET6_ADDRSTRLEN
+#endif/*IPV4_TASK*/   
+
 #include "data_blob.h"
 
 typedef enum proto{
