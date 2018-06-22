@@ -1,0 +1,72 @@
+#include "gateway.h"
+static thread_safe_queue** results_pool;
+static thread_safe_queue* ready_pool;
+static uint32_t* results_counter;
+
+static thread_safe_queue* registration_list;
+
+/*Allocated spaces for gateway devices*/
+void init_gateway(){
+   results_pool = (thread_safe_queue**)malloc(sizeof(thread_safe_queue*)*total_cli_num);
+   results_counter = (uint32_t*)malloc(sizeof(uint32_t)*total_cli_num);
+   uint32_t i;
+   for(i = 0; i < total_cli_num; i++){
+      results_pool[i] = new_queue(MAX_QUEUE_SIZE);
+      results_counter[i] = 0;
+   } 
+   ready_pool = new_queue(MAX_QUEUE_SIZE); 
+   registration_list = new_queue(MAX_QUEUE_SIZE); 
+}
+
+void* collect_result(void* srv_conn){
+   printf("collect_result ... ... \n");
+   service_conn *conn = (service_conn *)srv_conn;
+   char ip_addr[ADDRSTRLEN];
+   int32_t cli_id;
+   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
+   cli_id = get_client_id(ip_addr);
+   if(cli_id < 0)
+      printf("Client IP address unknown ... ...\n");
+   blob* temp = recv_data(conn);
+   enqueue(results_pool[cli_id], temp);
+   free_blob(temp);
+   results_counter[cli_id]++;
+   if(results_counter[cli_id] == BATCH_SIZE){
+      temp = new_empty_blob(cli_id);
+      enqueue(ready_pool, temp);
+      free_blob(temp);
+      results_counter[cli_id] = 0;
+   }
+   return NULL;
+}
+
+void collect_result_thread(void *arg){
+   const char* request_types[]={"result"};
+   void* (*handlers[])(void*) = {collect_result};
+   int result_service = service_init(RESULT_COLLECT_PORT, TCP);
+   start_service(result_service, TCP, request_types, 1, handlers);
+   close_service(result_service);
+}
+
+void merge_result_thread(void *arg){
+   blob* temp = dequeue(ready_pool);
+   int32_t cli_id = temp->id;
+   free_blob(temp);
+   uint32_t batch = 0;
+   for(batch = 0; batch < BATCH_SIZE; batch ++){
+      temp = dequeue(results_pool[cli_id]);
+      free_blob(temp);
+   }
+}
+
+/*
+
+
+void work_stealing_thread(void *arg){
+   const char* request_types[]={"register_gateway", "steal_gateway", "sync_gateway"};
+   void* (*handlers[])(void*) = {register_gateway, steal_gateway, sync_gateway};
+   int wst_service = service_init(WORK_STEAL_PORT, TCP);
+   start_service(wst_service, TCP, request_types, 3, handlers);
+   close_service(wst_service);
+}
+*/
