@@ -59,14 +59,47 @@ void merge_result_thread(void *arg){
    }
 }
 
-/*
+void* register_gateway(void* srv_conn){
+   printf("register_gateway ... ... \n");
+   service_conn *conn = (service_conn *)srv_conn;
+   char ip_addr[ADDRSTRLEN];
+   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
+   blob* temp = new_blob_and_copy_data(get_client_id(ip_addr), ADDRSTRLEN, (uint8_t*)ip_addr);
+   enqueue(registration_list, temp);
+   free_blob(temp);
+   return NULL;
+}
 
+void* cancel_gateway(void* srv_conn){
+   printf("cancel_gateway ... ... \n");
+   service_conn *conn = (service_conn *)srv_conn;
+   char ip_addr[ADDRSTRLEN];
+   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
+   int32_t cli_id = get_client_id(ip_addr);
+   remove_by_id(registration_list, cli_id);
+   return NULL;
+}
+
+void* steal_gateway(void* srv_conn){
+   printf("steal_gateway ... ... \n");
+   service_conn *conn = (service_conn *)srv_conn;
+   blob* temp = try_dequeue(registration_list);
+   if(temp == NULL){
+      char ip_addr[ADDRSTRLEN]="empty";
+      temp = new_blob_and_copy_data(-1, ADDRSTRLEN, (uint8_t*)ip_addr);
+   }else{
+      enqueue(registration_list, temp);
+   }
+   send_data(temp, conn);
+   free_blob(temp);
+   return NULL;
+}
 
 void work_stealing_thread(void *arg){
-   const char* request_types[]={"register_gateway", "steal_gateway", "sync_gateway"};
-   void* (*handlers[])(void*) = {register_gateway, steal_gateway, sync_gateway};
+   const char* request_types[]={"register_gateway", "cancel_gateway", "steal_gateway"};
+   void* (*handlers[])(void*) = {register_gateway, steal_gateway};
    int wst_service = service_init(WORK_STEAL_PORT, TCP);
    start_service(wst_service, TCP, request_types, 3, handlers);
    close_service(wst_service);
 }
-*/
+
