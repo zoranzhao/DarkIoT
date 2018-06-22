@@ -2,7 +2,7 @@
 
 void exec_start_gateway(int portno, ctrl_proto proto){
     char request_type[20] = "start_gateway";
-    service_conn* conn = connect_service(proto, GATEWAY, portno);
+    service_conn* conn = connect_service(proto, AP, portno);
     send_request(request_type, 20, conn);
     close_service_connection(conn);
 }

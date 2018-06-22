@@ -13,8 +13,8 @@
 #define WORK_STEAL_PORT 11114 //Control the start and stop of a service
 
 /*IP address*/
-#define GATEWAY "10.157.89.51"/*Local ip is "192.168.4.1"*/
-#define AP "192.168.4.1"
+#define AP "10.157.89.51"/*Local ip is "192.168.4.1"*/
+#define GATEWAY "192.168.4.1"
 #define BLUE1    "192.168.4.9"
 #define ORANGE1  "192.168.4.8"
 #define PINK1    "192.168.4.4"
