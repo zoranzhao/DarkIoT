@@ -172,8 +172,6 @@ void test_network_api(int argc, char **argv){
    
 }
 
-
-
 /*
 make ARGS="6 start" test
 make ARGS="0 wst gateway" test
