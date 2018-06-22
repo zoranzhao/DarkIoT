@@ -83,6 +83,10 @@ void remove_by_id(thread_safe_queue *queue, int32_t id){
    sys_arch_sem_wait(&queue->mutex, 0);
    queue_node* prev = queue->head;
    queue_node* cur = queue->head->next;
+   if (queue->head == NULL){
+      sys_sem_signal(&queue->mutex);
+      return;
+   }
 
    if(queue->head->item->id == id){
       queue->head = queue->head->next;
