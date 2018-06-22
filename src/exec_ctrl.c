@@ -25,7 +25,6 @@ void* start_edge(void* conn){
    return NULL;
 }
 
-
 void exec_barrier(int portno, ctrl_proto proto)
 {
    const char* request_types[]={"start_gateway", "start_edge"};
@@ -35,4 +34,9 @@ void exec_barrier(int portno, ctrl_proto proto)
    close_service(service);
 }
 
-
+int32_t get_client_id(const char* ip_addr){
+   for(i = 0; i < CLI_NUM; i++){
+      if(strcmp(ip_addr, addr_list[i]) == 0){return i;}
+   }
+   return (-1);//
+}

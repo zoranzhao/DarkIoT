@@ -8,5 +8,6 @@
 
 void exec_barrier(int portno, ctrl_proto proto);
 void exec_start_gateway(int portno, ctrl_proto proto);
+int32_t get_client_id(const char* ip_addr);
 
 #endif
