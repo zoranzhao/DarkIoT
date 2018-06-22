@@ -82,6 +82,10 @@ blob* dequeue(thread_safe_queue *queue)
 void print_queue_by_id(thread_safe_queue *queue){
    sys_arch_sem_wait(&queue->mutex, 0);
    queue_node* cur = queue->head;
+   if (queue->head == NULL){
+      sys_sem_signal(&queue->mutex);
+      return;
+   }
    while (1) {
       if (cur->next == NULL){
          printf("%d\n", cur->item->id);
