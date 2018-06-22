@@ -149,10 +149,15 @@ void test_queue_remove(int argc, char **argv){
    q = new_queue(20); 
    producer(NULL);
    remove_by_id(q, 1);
+   print_queue_by_id(q);
+   remove_by_id(q, 2);
+   print_queue_by_id(q);
    remove_by_id(q, 3);
+   print_queue_by_id(q);
+   remove_by_id(q, 4);
+   print_queue_by_id(q);
    remove_by_id(q, 5);
-   producer(NULL);
-   consumer(NULL);
+   print_queue_by_id(q);
 }
 
 void test_queue(int argc, char **argv){
@@ -226,7 +231,7 @@ void test_start_ctrl(int argc, char **argv)
 
 int main(int argc, char **argv){
    /*test_start_ctrl(argc, argv);*/
-   test_queue(argc, argv);
+   test_queue_remove(argc, argv);
    return 0;
 }
 
