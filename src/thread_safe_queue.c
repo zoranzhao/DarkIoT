@@ -79,6 +79,42 @@ blob* dequeue(thread_safe_queue *queue)
    return item;
 }
 
+void remove_by_id(thread_safe_queue *queue, int32_t id){
+   sys_arch_sem_wait(&queue->mutex, 0);
+   queue_node* prev = queue->head;
+   queue_node* cur = queue->head->next;
+
+   if(queue->head->item->id == id){
+      queue->head = queue->head->next;
+      free_blob(prev->item);
+      free(prev);
+      queue->number_of_node--;
+      if (queue->head == NULL)
+         queue->tail = NULL;
+      sys_sem_signal(&queue->mutex);
+      return;
+   }
+   
+   while (cur != NULL) {
+      if(cur->item->id == id){
+         prev->next = cur->next;
+         if(cur->next == NULL){
+            queue->tail=prev;
+         }
+         free_blob(cur->item);
+         free(cur);
+         queue->number_of_node--;
+         sys_sem_signal(&queue->mutex);
+	 return;
+      }
+      prev = cur;
+      cur = cur->next;
+   } 
+
+   sys_sem_signal(&queue->mutex);
+   return;
+}
+
 blob* try_dequeue(thread_safe_queue *queue)
 {
    sys_arch_sem_wait(&queue->mutex, 0);

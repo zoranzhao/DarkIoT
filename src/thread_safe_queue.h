@@ -22,6 +22,7 @@ typedef struct ts_queue {
 thread_safe_queue *new_queue(uint32_t capacity);
 void enqueue(thread_safe_queue *q, blob* item);
 blob* dequeue(thread_safe_queue *q);
+void remove_by_id(thread_safe_queue *q, int32_t id);
 blob* try_dequeue(thread_safe_queue *queue);
 void free_queue(thread_safe_queue *q);
 
