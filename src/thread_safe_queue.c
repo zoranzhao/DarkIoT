@@ -79,6 +79,22 @@ blob* dequeue(thread_safe_queue *queue)
    return item;
 }
 
+void print_queue_by_id(thread_safe_queue *queue){
+   sys_arch_sem_wait(&queue->mutex, 0);
+   queue_node* cur = queue->head;
+   while (1) {
+      if (cur->next == NULL){
+         printf("%d\n", cur->item->id);
+         break;
+      }
+      printf("%d, ", cur->item->id);
+      cur = cur->next;
+   } 
+
+   sys_sem_signal(&queue->mutex);
+   return;
+}
+
 void remove_by_id(thread_safe_queue *queue, int32_t id){
    sys_arch_sem_wait(&queue->mutex, 0);
    queue_node* prev = queue->head;
