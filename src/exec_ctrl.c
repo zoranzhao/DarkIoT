@@ -35,6 +35,7 @@ void exec_barrier(int portno, ctrl_proto proto)
 }
 
 int32_t get_client_id(const char* ip_addr){
+   uint32_t i;
    for(i = 0; i < CLI_NUM; i++){
       if(strcmp(ip_addr, addr_list[i]) == 0){return i;}
    }
