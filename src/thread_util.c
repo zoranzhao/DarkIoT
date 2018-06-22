@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <stdio.h>
+#include <time.h>
 
 #ifndef SYS_ARCH_TIMEOUT
 #define SYS_ARCH_TIMEOUT 1000000
@@ -190,5 +191,12 @@ void sys_sem_free(struct sys_sem **sem)
   if (sem != NULL) {
     sys_sem_free_internal(*sem);
   }
+}
+
+void sys_sleep(uint32_t milliseconds){
+   struct timespec ts;
+   ts.tv_sec = milliseconds / 1000;
+   ts.tv_nsec = (milliseconds % 1000) * 1000000;
+   nanosleep(&ts, NULL);
 }
 
