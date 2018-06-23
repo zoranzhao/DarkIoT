@@ -18,8 +18,8 @@ void init_gateway(){
    registration_list = new_queue(MAX_QUEUE_SIZE); 
 }
 
-void* collect_result(void* srv_conn){
-   printf("collect_result ... ... \n");
+void* result_gateway(void* srv_conn){
+   printf("result_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
    char ip_addr[ADDRSTRLEN];
    int32_t cli_id;
@@ -41,8 +41,8 @@ void* collect_result(void* srv_conn){
 }
 
 void collect_result_thread(void *arg){
-   const char* request_types[]={"result"};
-   void* (*handlers[])(void*) = {collect_result};
+   const char* request_types[]={"result_gateway"};
+   void* (*handlers[])(void*) = {result_gateway};
    int result_service = service_init(RESULT_COLLECT_PORT, TCP);
    start_service(result_service, TCP, request_types, 1, handlers);
    close_service(result_service);
