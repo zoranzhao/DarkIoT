@@ -19,6 +19,8 @@
 #include "network_util.h"
 #include "config.h"
 #include "exec_ctrl.h"
+#include "client.h"
+#include "gateway.h"
 
 #endif
 
