@@ -4,10 +4,9 @@
 #include "exec_ctrl.h"
 
 void init_client();
-void steal_task_thread(void *arg);
-void generate_task_thread(void *arg);
+void steal_and_process_thread(void *arg);
+void generate_and_process_thread(void *arg);
 void send_result_thread(void *arg);
-void process_task_thread(void *arg);
 void serve_stealing_thread(void *arg);
 
 #endif

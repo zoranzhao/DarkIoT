@@ -8,7 +8,29 @@ void init_client(){
    result_queue = new_queue(MAX_QUEUE_SIZE); 
 }
 
-void steal_task_thread(void *arg){
+static void register_client(){
+   char request_type[20] = "register_gateway";
+   service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
+   send_request(request_type, 20, conn);
+   close_service_connection(conn);
+}
+
+static void cancel_client(){
+   char request_type[20] = "cancel_gateway";
+   service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
+   send_request(request_type, 20, conn);
+   close_service_connection(conn);
+}
+
+static void process_task(blob* temp){
+   blob* result;
+   char data[20] = "output_data";
+   result = new_blob_and_copy_data(temp->id, 20, (uint8_t*)data);
+   enqueue(result_queue, result); 
+   free_blob(result);
+}
+
+void steal_and_process_thread(void *arg){
    /*Check gateway for possible stealing victims*/
    service_conn* conn;
    blob* temp;
@@ -33,22 +55,31 @@ void steal_task_thread(void *arg){
          sys_sleep(100);
          continue;
       }
-      
-      enqueue(task_queue, temp);
+      process_task(temp);
       free_blob(temp);
    }
 
 }
 
-void generate_task_thread(void *arg){
+void generate_and_process_thread(void *arg){
    uint32_t task;
    blob* temp;
    char data[20] = "input_data";
+ 
+   register_client();
    for(task = 0; task < BATCH_SIZE; task ++){
       temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
       enqueue(task_queue, temp);
       free_blob(temp);
    }
+   while(1){
+      temp = try_dequeue(task_queue);
+      if(temp == NULL) break;
+      process_task(temp);
+      free_blob(temp);
+   }
+   cancel_client();
+
 }
 
 void send_result_thread(void *arg){
@@ -64,19 +95,6 @@ void send_result_thread(void *arg){
    }
 }
 
-void process_task_thread(void *arg){
-   uint32_t task = 0;
-   blob* temp;
-   blob* result;
-   char data[20] = "output_data";
-   while(1){
-      temp = dequeue(result_queue);
-      free_blob(temp);
-      result = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
-      task++;
-      enqueue(task_queue, result);
-   }
-}
 
 void* steal_client(void* srv_conn){
    printf("steal_client ... ... \n");
