@@ -210,7 +210,9 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
    clilen = sizeof(cli_addr);
    uint32_t meta_data_bytes_length;
    uint8_t* meta_data;
+   int32_t meta_data_id;
    service_conn* conn;
+
    while(1){
       uint32_t handler_id = 0;
       /*Accept incoming connection*/
@@ -226,7 +228,7 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
 
-
+      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_id, sizeof(meta_data_id), (struct sockaddr *) &cli_addr, &clilen);
       /*Recv meta control data and pick up the correct handler*/
       read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
       meta_data = (uint8_t*)malloc(meta_data_bytes_length);
