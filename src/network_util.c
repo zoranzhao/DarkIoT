@@ -188,11 +188,9 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
 
-
       /*Calling handler on the connection session*/
       (handlers[handler_id])(conn);
       /*Calling handler on the connection session*/
-
 
       /*Close connection*/
       if(proto == TCP){
@@ -244,11 +242,9 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
 
-
       /*Calling handler on the connection session*/
       (handlers[handler_id])(conn);
       /*Calling handler on the connection session*/
-
 
       /*Close connection*/
       if(proto == TCP){
