@@ -17,6 +17,7 @@ void* start_gateway(void* conn){
       send_request(request_type, 20, new_conn);
       close_service_connection(new_conn);
    }
+   printf("Finish start_gateway, start edge devices ...\n");
    return NULL;
 }
 
