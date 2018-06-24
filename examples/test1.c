@@ -179,9 +179,9 @@ void test_network_api(int argc, char **argv){
 
 /*
 make ARGS="2 start" test
-make ARGS="0 wst gateway" test
+make ARGS="2 wst gateway" test
 make ARGS="0 wst_s data_source" test
-make ARGS="0 wst_s non_data_source" test
+make ARGS="1 wst non_data_source" test
 */
 void test_gateway_ctrl(){
    exec_barrier(START_CTRL, TCP);
