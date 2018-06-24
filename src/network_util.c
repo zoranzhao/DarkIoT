@@ -77,8 +77,10 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
 #elif IPV6_TASK//IPV4_TASK
       sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 #endif//IPV4_TASK
-      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
+         printf("ERROR connecting to %s on Port %d\n", dest_ip, portno);
          printf("ERROR connecting %s\n", strerror(errno));
+      }
    } else if (proto == UDP) {
 #if IPV4_TASK
       sockfd = socket(AF_INET, SOCK_DGRAM, 0);
