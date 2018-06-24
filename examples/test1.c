@@ -207,8 +207,8 @@ void test_gateway(){
 }
 
 void test_stealer_client(){
-   init_client();
    exec_barrier(START_CTRL, TCP);
+   init_client();
    sys_thread_t t1 = sys_thread_new("steal_and_process_thread", steal_and_process_thread, NULL, 0, 0);
    sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, NULL, 0, 0);
 
@@ -218,8 +218,8 @@ void test_stealer_client(){
 }
 
 void test_victim_client(){
-   init_client();
    exec_barrier(START_CTRL, TCP);
+   init_client();
    sys_thread_t t1 = sys_thread_new("generate_and_process_thread", generate_and_process_thread, NULL, 0, 0);
    sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, NULL, 0, 0);
    sys_thread_t t3 = sys_thread_new("serve_stealing_thread", serve_stealing_thread, NULL, 0, 0);
