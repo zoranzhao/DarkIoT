@@ -8,7 +8,6 @@ static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const
 static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const char *dest_ip, struct sockaddr_in6* addr, int portno);
 #endif/*IPV4_TASK*/ 
 
-
 int service_init(int portno, ctrl_proto proto){
    int sockfd;
 #if IPV4_TASK
