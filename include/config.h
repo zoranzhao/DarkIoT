@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /*Debug printing information*/
-#define DEBUG_FLAG 0
+#define DEBUG_FLAG 1
 
 /*Assgin port number for different services*/
 #define PORTNO 11111 //Service for job stealing and sharing
