@@ -12,7 +12,7 @@ void* start_gateway(void* conn){
    printf("Call start_gateway, start edge devices ...\n");
    uint32_t cli_id;
    service_conn* new_conn;
-   for(cli_id = 0; cli_id < CLI_NUM; cli_id ++){
+   for(cli_id = 0; cli_id < total_cli_num; cli_id ++){
       new_conn = connect_service(((service_conn*)conn)->proto, addr_list[cli_id], START_CTRL);
       send_request(request_type, 20, new_conn);
       close_service_connection(new_conn);
