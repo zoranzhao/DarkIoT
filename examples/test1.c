@@ -229,6 +229,47 @@ void test_start_ctrl(int argc, char **argv)
    }
 }
 
+
+void test_gateway(){
+   exec_barrier(START_CTRL, TCP);
+   init_gateway();
+   sys_thread_t t1 = sys_thread_new("collect_result_thread", collect_result_thread, NULL, 0, 0);
+   sys_thread_t t2 = sys_thread_new("merge_result_thread", merge_result_thread, NULL, 0, 0);
+   sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, NULL, 0, 0);
+
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+   sys_thread_join(t3);
+
+
+}
+
+void test_stealer_client(){
+   exec_barrier(START_CTRL, TCP);
+   init_client();
+   sys_thread_t t1 = sys_thread_new("steal_and_process_thread", steal_and_process_thread, NULL, 0, 0);
+   sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, NULL, 0, 0);
+
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+
+}
+
+void test_victim_client(){
+   exec_barrier(START_CTRL, TCP);
+   init_client();
+   sys_thread_t t1 = sys_thread_new("generate_and_process_thread", generate_and_process_thread, NULL, 0, 0);
+   sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, NULL, 0, 0);
+   sys_thread_t t3 = sys_thread_new("serve_stealing_thread", serve_stealing_thread, NULL, 0, 0);
+
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+   sys_thread_join(t3);
+
+
+}
+
+
 int main(int argc, char **argv){
    /*test_start_ctrl(argc, argv);*/
    test_queue_remove(argc, argv);
