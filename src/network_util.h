@@ -20,6 +20,7 @@
 #endif/*IPV4_TASK*/   
 
 #include "data_blob.h"
+#include "config.h"
 
 typedef enum proto{
    TCP,
