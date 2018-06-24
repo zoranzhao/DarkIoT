@@ -178,7 +178,7 @@ void test_network_api(int argc, char **argv){
 }
 
 /*
-make ARGS="6 start" test
+make ARGS="2 start" test
 make ARGS="0 wst gateway" test
 make ARGS="0 wst_s data_source" test
 make ARGS="0 wst_s non_data_source" test
@@ -190,45 +190,6 @@ void test_gateway_ctrl(){
 void test_edge_ctrl(){
    exec_barrier(START_CTRL, TCP);
 }
-
-void test_start_ctrl(int argc, char **argv)
-{
-   printf("total_cli_num %d\n", atoi(argv[1]));
-   printf("this_cli_id %d\n", atoi(argv[1]));
-
-   this_cli_id = atoi(argv[1]);
-   total_cli_num = atoi(argv[1]);
-      
-   if(0 == strcmp(argv[2], "start")){  
-      printf("start\n");
-      exec_start_gateway(START_CTRL, TCP);
-   }else if(0 == strcmp(argv[2], "wst")){
-      printf("Work stealing\n");
-      if(0 == strcmp(argv[3], "non_data_source")){
-         printf("non_data_source\n");
-         test_edge_ctrl();
-      }else if(0 == strcmp(argv[3], "data_source")){
-         printf("data_source\n");
-         test_edge_ctrl();
-      }else if(0 == strcmp(argv[3], "gateway")){
-         printf("gateway\n");
-         test_gateway_ctrl();
-      }
-   }else if(0 == strcmp(argv[2], "wst_s")){
-      printf("Work stealing with scheduling\n");
-      if(0 == strcmp(argv[3], "non_data_source")){
-         printf("non_data_source\n");
-         test_edge_ctrl();
-      }else if(0 == strcmp(argv[3], "data_source")){
-         printf("data_source\n");
-         test_edge_ctrl();
-      }else if(0 == strcmp(argv[3], "gateway")){
-         printf("gateway\n");
-         test_gateway_ctrl();
-      }
-   }
-}
-
 
 void test_gateway(){
    exec_barrier(START_CTRL, TCP);
@@ -269,10 +230,47 @@ void test_victim_client(){
 
 }
 
+void test_wst(int argc, char **argv)
+{
+   printf("total_cli_num %d\n", atoi(argv[1]));
+   printf("this_cli_id %d\n", atoi(argv[1]));
+
+   this_cli_id = atoi(argv[1]);
+   total_cli_num = atoi(argv[1]);
+      
+   if(0 == strcmp(argv[2], "start")){  
+      printf("start\n");
+      exec_start_gateway(START_CTRL, TCP);
+   }else if(0 == strcmp(argv[2], "wst")){
+      printf("Work stealing\n");
+      if(0 == strcmp(argv[3], "non_data_source")){
+         printf("non_data_source\n");
+         test_stealer_client();
+      }else if(0 == strcmp(argv[3], "data_source")){
+         printf("data_source\n");
+         test_victim_client();
+      }else if(0 == strcmp(argv[3], "gateway")){
+         printf("gateway\n");
+         test_gateway();
+      }
+   }else if(0 == strcmp(argv[2], "wst_s")){
+      printf("Work stealing with scheduling\n");
+      if(0 == strcmp(argv[3], "non_data_source")){
+         printf("non_data_source\n");
+         test_stealer_client();
+      }else if(0 == strcmp(argv[3], "data_source")){
+         printf("data_source\n");
+         test_victim_client();
+      }else if(0 == strcmp(argv[3], "gateway")){
+         printf("gateway\n");
+         test_gateway();
+      }
+   }
+}
 
 int main(int argc, char **argv){
-   /*test_start_ctrl(argc, argv);*/
-   test_queue_remove(argc, argv);
+   /*test_queue_remove(argc, argv);*/
+   test_wst(argc, argv);
    return 0;
 }
 
