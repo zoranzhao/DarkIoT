@@ -90,7 +90,7 @@ void generate_and_process_thread(void *arg){
 #endif
    }
 #if DEBUG_FLAG
-   printf("Locally processed task number is%d\n", task_counter);
+   printf("Locally processed task number is %d\n", task_counter);
 #endif
    cancel_client();
 }
@@ -98,10 +98,17 @@ void generate_and_process_thread(void *arg){
 void send_result_thread(void *arg){
    service_conn* conn;
    blob* temp;
+#if DEBUG_FLAG
+   uint32_t task_counter = 0;   
+#endif
    while(1){
       conn = connect_service(TCP, GATEWAY, RESULT_COLLECT_PORT);
       send_request("result_gateway", 20, conn);
       temp = dequeue(result_queue);
+#if DEBUG_FLAG
+      task_counter ++;  
+      printf("send_result %d\n", task_counter); 
+#endif
       send_data(temp, conn);
       free_blob(temp);
       close_service_connection(conn);
