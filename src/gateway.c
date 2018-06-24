@@ -25,6 +25,9 @@ void* result_gateway(void* srv_conn){
    int32_t cli_id;
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
    cli_id = get_client_id(ip_addr);
+#if DEBUG_FLAG
+   printf("Get results from %d: %s\n", cli_id, ip_addr);
+#endif
    if(cli_id < 0)
       printf("Client IP address unknown ... ...\n");
    blob* temp = recv_data(conn);
@@ -67,6 +70,20 @@ void* register_gateway(void* srv_conn){
    blob* temp = new_blob_and_copy_data(get_client_id(ip_addr), ADDRSTRLEN, (uint8_t*)ip_addr);
    enqueue(registration_list, temp);
    free_blob(temp);
+#if DEBUG_FLAG
+   queue_node* cur = registration_list->head;
+   if (registration_list->head == NULL){
+      printf("No client is registered!\n");
+   }
+   while (1) {
+      if (cur->next == NULL){
+         printf("%d: %s,\n", cur->item->id, ((char*)(cur->item->data)));
+         break;
+      }
+      printf("%d: %s\n", cur->item->id, ((char*)(cur->item->data)));
+      cur = cur->next;
+   } 
+#endif
    return NULL;
 }
 
@@ -97,7 +114,7 @@ void* steal_gateway(void* srv_conn){
 
 void work_stealing_thread(void *arg){
    const char* request_types[]={"register_gateway", "cancel_gateway", "steal_gateway"};
-   void* (*handlers[])(void*) = {register_gateway, steal_gateway};
+   void* (*handlers[])(void*) = {register_gateway, cancel_gateway, steal_gateway};
    int wst_service = service_init(WORK_STEAL_PORT, TCP);
    start_service(wst_service, TCP, request_types, 3, handlers);
    close_service(wst_service);

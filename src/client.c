@@ -34,6 +34,9 @@ void steal_and_process_thread(void *arg){
    /*Check gateway for possible stealing victims*/
    service_conn* conn;
    blob* temp;
+#if DEBUG_FLAG
+   uint32_t task_counter = 0;   
+#endif
    while(1){
       conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
       send_request("steal_gateway", 20, conn);
@@ -57,6 +60,10 @@ void steal_and_process_thread(void *arg){
       }
       process_task(temp);
       free_blob(temp);
+#if DEBUG_FLAG
+      task_counter ++;   
+      printf("Processed stolen task number is%d\n", task_counter);
+#endif
    }
 
 }
@@ -65,7 +72,9 @@ void generate_and_process_thread(void *arg){
    uint32_t task;
    blob* temp;
    char data[20] = "input_data";
- 
+#if DEBUG_FLAG
+   uint32_t task_counter = 0;   
+#endif
    register_client();
    for(task = 0; task < BATCH_SIZE; task ++){
       temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
@@ -77,7 +86,13 @@ void generate_and_process_thread(void *arg){
       if(temp == NULL) break;
       process_task(temp);
       free_blob(temp);
+#if DEBUG_FLAG
+      task_counter ++;   
+#endif
    }
+#if DEBUG_FLAG
+   printf("Locally processed task number is%d\n", task_counter);
+#endif
    cancel_client();
 
 }
@@ -95,7 +110,6 @@ void send_result_thread(void *arg){
    }
 }
 
-
 void* steal_client(void* srv_conn){
    printf("steal_client ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
@@ -108,7 +122,6 @@ void* steal_client(void* srv_conn){
    free_blob(temp);
    return NULL;
 }
-
 
 void serve_stealing_thread(void *arg){
    const char* request_types[]={"steal_client"};
