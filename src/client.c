@@ -65,7 +65,6 @@ void steal_and_process_thread(void *arg){
       printf("Processed stolen task number is%d\n", task_counter);
 #endif
    }
-
 }
 
 void generate_and_process_thread(void *arg){
@@ -94,7 +93,6 @@ void generate_and_process_thread(void *arg){
    printf("Locally processed task number is%d\n", task_counter);
 #endif
    cancel_client();
-
 }
 
 void send_result_thread(void *arg){
