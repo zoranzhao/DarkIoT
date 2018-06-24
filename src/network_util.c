@@ -180,7 +180,10 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
       meta_data = (uint8_t*)malloc(meta_data_bytes_length);
       read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
+      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num); 
+#if DEBUG_FLAG
+      printf("Operation is: %s\n", (char*)meta_data);
+#endif     
       free(meta_data);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
