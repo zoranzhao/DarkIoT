@@ -83,6 +83,9 @@ void generate_and_process_thread(void *arg){
    while(1){
       temp = try_dequeue(task_queue);
       if(temp == NULL) break;
+#if DEBUG_FLAG
+      printf("Dequeued local task is %d\n", temp->id);
+#endif
       process_task(temp);
       free_blob(temp);
 #if DEBUG_FLAG
@@ -123,6 +126,9 @@ void* steal_client(void* srv_conn){
       char data[20]="empty";
       temp = new_blob_and_copy_data(-1, 20, (uint8_t*)data);
    }
+#if DEBUG_FLAG
+   printf("Stolen local task is %d\n", temp->id);
+#endif
    send_data(temp, conn);
    free_blob(temp);
    return NULL;
