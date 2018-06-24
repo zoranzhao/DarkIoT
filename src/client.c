@@ -105,9 +105,9 @@ void send_result_thread(void *arg){
    uint32_t task_counter = 0;   
 #endif
    while(1){
+      temp = dequeue(result_queue);
       conn = connect_service(TCP, GATEWAY, RESULT_COLLECT_PORT);
       send_request("result_gateway", 20, conn);
-      temp = dequeue(result_queue);
 #if DEBUG_FLAG
       task_counter ++;  
       printf("send_result %d\n", task_counter); 
