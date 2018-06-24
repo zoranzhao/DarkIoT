@@ -10,7 +10,7 @@
 #define SMART_GATEWAY 11112 //Service for a smart gateway 
 #define START_CTRL 11113 //Control the start and stop of a service
 #define RESULT_COLLECT_PORT 11114 //Control the start and stop of a service
-#define WORK_STEAL_PORT 11114 //Control the start and stop of a service
+#define WORK_STEAL_PORT 11115 //Control the start and stop of a service
 
 /*IP address*/
 #define AP "10.157.89.51"/*Local ip is "192.168.4.1"*/
