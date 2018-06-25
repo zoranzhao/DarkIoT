@@ -21,24 +21,24 @@ void init_gateway(){
 void* result_gateway(void* srv_conn){
    printf("result_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
-   char ip_addr[ADDRSTRLEN];
-   int32_t cli_id;
-   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
-   cli_id = get_client_id(ip_addr);
 #if DEBUG_FLAG
-   printf("Get results from %d: %s\n", cli_id, ip_addr);
-#endif
-   if(cli_id < 0)
+   char ip_addr[ADDRSTRLEN];
+   int32_t processing_cli_id;
+   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
+   processing_cli_id = get_client_id(ip_addr);
+   printf("Get results from %d: %s\n", processing_cli_id, ip_addr);
+   if(processing_cli_id < 0)
       printf("Client IP address unknown ... ...\n");
+#endif
    blob* temp = recv_data(conn);
-   enqueue(results_pool[cli_id], temp);
+   enqueue(results_pool[get_blob_cli_id(temp)], temp);
    free_blob(temp);
-   results_counter[cli_id]++;
-   if(results_counter[cli_id] == BATCH_SIZE){
-      temp = new_empty_blob(cli_id);
+   results_counter[get_blob_cli_id(temp)]++;
+   if(results_counter[get_blob_cli_id(temp)] == BATCH_SIZE){
+      temp = new_empty_blob(get_blob_cli_id(temp));
       enqueue(ready_pool, temp);
       free_blob(temp);
-      results_counter[cli_id] = 0;
+      results_counter[get_blob_cli_id(temp)] = 0;
    }
    return NULL;
 }
