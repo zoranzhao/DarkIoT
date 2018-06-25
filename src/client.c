@@ -36,9 +36,6 @@ void steal_and_process_thread(void *arg){
    /*Check gateway for possible stealing victims*/
    service_conn* conn;
    blob* temp;
-#if DEBUG_FLAG
-   uint32_t task_counter = 0;   
-#endif
    while(1){
       conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
       send_request("steal_gateway", 20, conn);
@@ -62,10 +59,6 @@ void steal_and_process_thread(void *arg){
       }
       process_task(temp);
       free_blob(temp);
-#if DEBUG_FLAG
-      task_counter ++;   
-      printf("Processed stolen task number is%d\n", task_counter);
-#endif
    }
 }
 
@@ -73,9 +66,6 @@ void generate_and_process_thread(void *arg){
    uint32_t task;
    blob* temp;
    char data[20] = "input_data";
-#if DEBUG_FLAG
-   uint32_t task_counter = 0;   
-#endif
    uint32_t frame_num;
    for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
       register_client();
@@ -88,18 +78,9 @@ void generate_and_process_thread(void *arg){
       while(1){
          temp = try_dequeue(task_queue);
          if(temp == NULL) break;
-#if DEBUG_FLAG
-         printf("Dequeued local task is %d\n", temp->id);
-#endif
          process_task(temp);
          free_blob(temp);
-#if DEBUG_FLAG
-         task_counter ++;   
-#endif
       }
-#if DEBUG_FLAG
-      printf("Locally processed task number is %d\n", task_counter);
-#endif
       cancel_client();
    }
 

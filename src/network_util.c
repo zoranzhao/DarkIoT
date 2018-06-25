@@ -209,11 +209,7 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       /*First recv the request and look up the handler table*/
       req = recv_request(conn);
       handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
-#if DEBUG_FLAG
-#if IPV4_TASK
-      printf("Operation is: %s, from %s\n", (char*)req, inet_ntoa(cli_addr.sin_addr));
-#endif/*IPV4_TASK*/
-#endif    
+  
       free(req);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
@@ -260,11 +256,7 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       /*First recv the request and look up the handler table*/
       req = recv_request(conn);
       handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
-#if DEBUG_FLAG
-#if IPV4_TASK
-      printf("Operation is: %s, from %s\n", (char*)req, inet_ntoa(cli_addr.sin_addr));
-#endif/*IPV4_TASK*/
-#endif    
+   
       free(req);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
