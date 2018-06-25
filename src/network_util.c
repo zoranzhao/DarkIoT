@@ -105,10 +105,18 @@ void close_service_connection(service_conn* conn){
 void send_data(blob *temp, service_conn* conn){
    void* data;
    uint32_t bytes_length;
+   void* meta_data;
+   uint32_t meta_data_bytes_length;
    int32_t id;
    data = temp->data;
    bytes_length = temp->size;
+   meta_data = temp->meta_data;
+   meta_data_bytes_length = temp->meta_size;
    id = temp->id;
+   
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   if(meta_data_bytes_length > 0)
+      write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta_data, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
@@ -117,18 +125,30 @@ void send_data(blob *temp, service_conn* conn){
 blob* recv_data(service_conn* conn){
    uint8_t* buffer;
    uint32_t bytes_length;
+   uint8_t* meta_data = NULL;
+   uint32_t meta_data_bytes_length = 0;
    int32_t id;
+
    socklen_t addr_len;
 #if IPV4_TASK
    addr_len = sizeof(struct sockaddr_in);
 #elif IPV6_TASK/*IPV4_TASK*/
    addr_len = sizeof(struct sockaddr_in6);
 #endif/*IPV4_TASK*/
+   read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   if(meta_data_bytes_length > 0){
+      meta_data = (uint8_t*)malloc(meta_data_bytes_length);
+      read_from_sock(conn->sockfd, conn->proto, meta_data, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   }
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    buffer = (uint8_t*)malloc(bytes_length);
    read_from_sock(conn->sockfd, conn->proto, buffer, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    blob* tmp = new_blob_and_copy_data(id, bytes_length, buffer);
+   if(meta_data_bytes_length > 0){
+      fill_blob_meta(tmp, meta_data_bytes_length, meta_data);
+      free(meta_data);
+   }
    free(buffer);
    return tmp;
 }
@@ -184,12 +204,8 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       if (newsockfd < 0) {printf("ERROR on accept\n");return;}
       conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
-/*
-      read_from_sock(newsockfd, proto, (uint8_t*)&req_id, sizeof(req_id), (struct sockaddr *) &cli_addr, &clilen);
-      read_from_sock(newsockfd, proto, (uint8_t*)&req_bytes_length, sizeof(req_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      req = (uint8_t*)malloc(req_bytes_length);
-      read_from_sock(newsockfd, proto, req, req_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-*/
+
+      /*First recv the request and look up the handler table*/
       req = recv_request(conn);
       handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
 #if DEBUG_FLAG
@@ -239,12 +255,8 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       if (newsockfd < 0) {printf("ERROR on accept\n");return;}
       conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
-/*
-      read_from_sock(newsockfd, proto, (uint8_t*)&req_id, sizeof(req_id), (struct sockaddr *) &cli_addr, &clilen);
-      read_from_sock(newsockfd, proto, (uint8_t*)&req_bytes_length, sizeof(req_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      req = (uint8_t*)malloc(req_bytes_length);
-      read_from_sock(newsockfd, proto, req, req_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-*/
+
+      /*First recv the request and look up the handler table*/
       req = recv_request(conn);
       handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
 #if DEBUG_FLAG
