@@ -110,7 +110,7 @@ void send_data(blob *temp, service_conn* conn){
    int32_t id;
    data = temp->data;
    bytes_length = temp->size;
-   meta_data = temp->meta_data;
+   meta_data = temp->meta;
    meta_data_bytes_length = temp->meta_size;
    id = temp->id;
    
