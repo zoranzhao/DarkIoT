@@ -117,7 +117,7 @@ void send_result_thread(void *arg){
       send_request("result_gateway", 20, conn);
 #if DEBUG_FLAG
       task_counter ++;  
-      printf("send_result %d\n", task_counter); 
+      printf("send_result for task %d:%d, total number is %d\n", get_blob_cli_id(temp), get_blob_task_id(temp), task_counter); 
 #endif
       send_data(temp, conn);
       free_blob(temp);
