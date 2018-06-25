@@ -55,6 +55,9 @@ void merge_result_thread(void *arg){
    blob* temp = dequeue(ready_pool);
    int32_t cli_id = temp->id;
    free_blob(temp);
+#if DEBUG_FLAG
+   printf("Results for client %d are all collected\n", cli_id);
+#endif
    uint32_t batch = 0;
    for(batch = 0; batch < BATCH_SIZE; batch ++){
       temp = dequeue(results_pool[cli_id]);
