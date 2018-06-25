@@ -146,6 +146,7 @@ blob* recv_data(service_conn* conn){
    read_from_sock(conn->sockfd, conn->proto, buffer, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    blob* tmp = new_blob_and_copy_data(id, bytes_length, buffer);
    if(meta_size > 0){
+      printf("Recving meta with size of %d\n", meta_size);
       fill_blob_meta(tmp, meta_size, meta);
       free(meta);
    }
