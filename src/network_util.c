@@ -133,10 +133,20 @@ blob* recv_data(service_conn* conn){
    return tmp;
 }
 
-void send_request(void* meta, uint32_t meta_size, service_conn* conn){
-   blob* temp = new_blob_and_copy_data(0, meta_size, meta);
+void send_request(void* req, uint32_t req_size, service_conn* conn){
+   blob* temp = new_blob_and_copy_data(0, req_size, req);
    send_data(temp, conn);
    free_blob(temp);  
+}
+
+static uint8_t* recv_request(service_conn* conn){
+   blob* temp;
+   uint8_t* req;
+   temp = recv_data(conn);
+   req = (uint8_t*)malloc(sizeof(uint8_t)*(temp->size));
+   memcpy(req, temp->data, temp->size);
+   free_blob(temp); 
+   return req; 
 }
 
 static inline uint32_t look_up_handler_table(char* name, const char* handler_name[], uint32_t handler_num){
@@ -156,9 +166,7 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
 #endif/*IPV4_TASK*/
    int newsockfd;
    clilen = sizeof(cli_addr);
-   uint32_t meta_data_bytes_length;
-   uint8_t* meta_data;
-   int32_t meta_data_id;
+   uint8_t* req;
    service_conn* conn;
 
    uint32_t srv_times;
@@ -176,17 +184,20 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       if (newsockfd < 0) {printf("ERROR on accept\n");return;}
       conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
-
-      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_id, sizeof(meta_data_id), (struct sockaddr *) &cli_addr, &clilen);
-      /*Recv meta control data and pick up the correct handler*/
-      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      meta_data = (uint8_t*)malloc(meta_data_bytes_length);
-      read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num); 
+/*
+      read_from_sock(newsockfd, proto, (uint8_t*)&req_id, sizeof(req_id), (struct sockaddr *) &cli_addr, &clilen);
+      read_from_sock(newsockfd, proto, (uint8_t*)&req_bytes_length, sizeof(req_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
+      req = (uint8_t*)malloc(req_bytes_length);
+      read_from_sock(newsockfd, proto, req, req_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+*/
+      req = recv_request(conn);
+      handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
 #if DEBUG_FLAG
-      printf("Operation is: %s\n", (char*)meta_data);
-#endif     
-      free(meta_data);
+#if IPV4_TASK
+      printf("Operation is: %s, from %s\n", (char*)req, inet_ntoa(cli_addr.sin_addr));
+#endif/*IPV4_TASK*/
+#endif    
+      free(req);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
 
@@ -211,9 +222,7 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
 #endif/*IPV4_TASK*/
    int newsockfd;
    clilen = sizeof(cli_addr);
-   uint32_t meta_data_bytes_length;
-   uint8_t* meta_data;
-   int32_t meta_data_id;
+   uint8_t* req;
    service_conn* conn;
 
    while(1){
@@ -230,19 +239,20 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       if (newsockfd < 0) {printf("ERROR on accept\n");return;}
       conn = new_service_conn(newsockfd, proto, NULL, &cli_addr, 0);
       /*Accept incoming connection*/
-
-      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_id, sizeof(meta_data_id), (struct sockaddr *) &cli_addr, &clilen);
-      /*Recv meta control data and pick up the correct handler*/
-      read_from_sock(newsockfd, proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
-      meta_data = (uint8_t*)malloc(meta_data_bytes_length);
-      read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
-      handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
+/*
+      read_from_sock(newsockfd, proto, (uint8_t*)&req_id, sizeof(req_id), (struct sockaddr *) &cli_addr, &clilen);
+      read_from_sock(newsockfd, proto, (uint8_t*)&req_bytes_length, sizeof(req_bytes_length), (struct sockaddr *) &cli_addr, &clilen);
+      req = (uint8_t*)malloc(req_bytes_length);
+      read_from_sock(newsockfd, proto, req, req_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
+*/
+      req = recv_request(conn);
+      handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
 #if DEBUG_FLAG
 #if IPV4_TASK
-      printf("Operation is: %s, from %s\n", (char*)meta_data, inet_ntoa(cli_addr.sin_addr));
+      printf("Operation is: %s, from %s\n", (char*)req, inet_ntoa(cli_addr.sin_addr));
 #endif/*IPV4_TASK*/
-#endif
-      free(meta_data);
+#endif    
+      free(req);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
 
