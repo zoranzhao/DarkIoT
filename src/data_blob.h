@@ -20,6 +20,7 @@ blob* new_empty_blob(int32_t id);
 void free_blob(blob* temp);
 
 void fill_blob_meta(blob* temp, uint32_t meta_size, uint8_t* meta);
+void copy_blob_meta(blob* dest, blob* src);
 
 blob* write_file_to_blob(const char *filename);
 void write_blob_to_file(const char *filename, blob* temp);

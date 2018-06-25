@@ -95,5 +95,10 @@ void fill_blob_meta(blob* temp, uint32_t meta_size, uint8_t* meta){
    memcpy(temp->meta, meta, meta_size);
 }
 
+void copy_blob_meta(blob* dest, blob* src){
+   dest->meta = (uint8_t*)malloc(sizeof(uint8_t)*src->meta_size);
+   dest->meta_size = src->meta_size;
+   memcpy(dest->meta, src->meta, src->meta_size);
+}
 
 
