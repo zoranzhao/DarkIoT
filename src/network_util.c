@@ -113,7 +113,6 @@ void send_data(blob *temp, service_conn* conn){
    meta = temp->meta;
    meta_size = temp->meta_size;
    id = temp->id;
-   printf("Sending meta with size of %d\n", meta_size);
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_size, sizeof(meta_size), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    if(meta_size > 0)
       write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta, meta_size, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
@@ -137,7 +136,6 @@ blob* recv_data(service_conn* conn){
 #endif/*IPV4_TASK*/
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_size, sizeof(meta_size), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    if(meta_size > 0){
-      printf("Recving meta with size of %d\n", meta_size);
       meta = (uint8_t*)malloc(meta_size);
       read_from_sock(conn->sockfd, conn->proto, meta, meta_size, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    }
