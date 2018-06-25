@@ -27,6 +27,7 @@ static void process_task(blob* temp){
    char data[20] = "output_data";
    result = new_blob_and_copy_data(temp->id, 20, (uint8_t*)data);
    copy_blob_meta(result, temp);
+   sys_sleep(1000);
    enqueue(result_queue, result); 
    free_blob(result);
 }
