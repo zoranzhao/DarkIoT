@@ -41,3 +41,28 @@ int32_t get_client_id(const char* ip_addr){
    }
    return (-1);//
 }
+
+void annotate_blob(blob* temp, int32_t cli_id, int32_t frame_seq, int32_t task_id){
+   int32_t meta[3];
+   meta[0] = cli_id;
+   meta[1] = frame_seq;
+   meta[2] = task_id;
+   fill_blob_meta(temp, sizeof(int32_t)*3, (uint8_t*)meta);
+}
+
+int32_t get_cli_id(blob* temp){
+   int32_t *meta = (int32_t*)(temp->meta);
+   return meta[0];
+}
+
+int32_t get_frame_seq(blob* temp){
+   int32_t *meta = (int32_t*)(temp->meta);
+   return meta[1];
+}
+
+int32_t get_task_id(blob* temp){
+   int32_t *meta = (int32_t*)(temp->meta);
+   return meta[2];
+}
+
+
