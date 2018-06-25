@@ -27,6 +27,7 @@ void* result_gateway(void* srv_conn){
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
    processing_cli_id = get_client_id(ip_addr);
    printf("Get results from %d: %s\n", processing_cli_id, ip_addr);
+   printf("Result from %d: %s is for %d\n", processing_cli_id, ip_addr, get_blob_cli_id(temp));
    if(processing_cli_id < 0)
       printf("Client IP address unknown ... ...\n");
 #endif
