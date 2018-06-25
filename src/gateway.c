@@ -21,6 +21,7 @@ void init_gateway(){
 void* result_gateway(void* srv_conn){
    printf("result_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
+   int32_t cli_id;
 #if DEBUG_FLAG
    char ip_addr[ADDRSTRLEN];
    int32_t processing_cli_id;
@@ -30,18 +31,20 @@ void* result_gateway(void* srv_conn){
       printf("Client IP address unknown ... ...\n");
 #endif
    blob* temp = recv_data(conn);
+   cli_id = get_blob_cli_id(temp);
 #if DEBUG_FLAG
-   printf("Result from %d: %s is for client %d, total number recved is %d\n", processing_cli_id, ip_addr, get_blob_cli_id(temp), results_counter[get_blob_cli_id(temp)]);
+   printf("Result from %d: %s is for client %d, total number recved is %d\n", processing_cli_id, ip_addr, cli_id, results_counter[cli_id]);
 #endif
-   enqueue(results_pool[get_blob_cli_id(temp)], temp);
+   enqueue(results_pool[cli_id], temp);
    free_blob(temp);
-   results_counter[get_blob_cli_id(temp)]++;
-   if(results_counter[get_blob_cli_id(temp)] == BATCH_SIZE){
-      temp = new_empty_blob(get_blob_cli_id(temp));
+   results_counter[cli_id]++;
+   if(results_counter[cli_id] == BATCH_SIZE){
+      temp = new_empty_blob(cli_id);
       enqueue(ready_pool, temp);
       free_blob(temp);
-      results_counter[get_blob_cli_id(temp)] = 0;
+      results_counter[cli_id] = 0;
    }
+
    return NULL;
 }
 
