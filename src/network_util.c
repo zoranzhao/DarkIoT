@@ -106,17 +106,17 @@ void send_data(blob *temp, service_conn* conn){
    void* data;
    uint32_t bytes_length;
    void* meta;
-   uint32_t meta_data_bytes_length;
+   uint32_t meta_size;
    int32_t id;
    data = temp->data;
    bytes_length = temp->size;
    meta = temp->meta;
-   meta_data_bytes_length = temp->meta_size;
+   meta_size = temp->meta_size;
    id = temp->id;
    
-   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
-   if(meta_data_bytes_length > 0)
-      write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_size, sizeof(meta_size), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   if(meta_size > 0)
+      write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta, meta_size, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
@@ -126,7 +126,7 @@ blob* recv_data(service_conn* conn){
    uint8_t* buffer;
    uint32_t bytes_length;
    uint8_t* meta = NULL;
-   uint32_t meta_data_bytes_length = 0;
+   uint32_t meta_size = 0;
    int32_t id;
 
    socklen_t addr_len;
@@ -135,18 +135,18 @@ blob* recv_data(service_conn* conn){
 #elif IPV6_TASK/*IPV4_TASK*/
    addr_len = sizeof(struct sockaddr_in6);
 #endif/*IPV4_TASK*/
-   read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_data_bytes_length, sizeof(meta_data_bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
-   if(meta_data_bytes_length > 0){
-      meta = (uint8_t*)malloc(meta_data_bytes_length);
-      read_from_sock(conn->sockfd, conn->proto, meta, meta_data_bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_size, sizeof(meta_size), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
+   if(meta_size > 0){
+      meta = (uint8_t*)malloc(meta_size);
+      read_from_sock(conn->sockfd, conn->proto, meta, meta_size, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    }
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    buffer = (uint8_t*)malloc(bytes_length);
    read_from_sock(conn->sockfd, conn->proto, buffer, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    blob* tmp = new_blob_and_copy_data(id, bytes_length, buffer);
-   if(meta_data_bytes_length > 0){
-      fill_blob_meta(tmp, meta_data_bytes_length, meta);
+   if(meta_size > 0){
+      fill_blob_meta(tmp, meta_size, meta);
       free(meta);
    }
    free(buffer);
