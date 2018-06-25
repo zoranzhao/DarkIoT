@@ -26,6 +26,7 @@ static void process_task(blob* temp){
    blob* result;
    char data[20] = "output_data";
    result = new_blob_and_copy_data(temp->id, 20, (uint8_t*)data);
+   copy_blob_meta(result, temp);
    enqueue(result_queue, result); 
    free_blob(result);
 }
@@ -74,28 +75,33 @@ void generate_and_process_thread(void *arg){
 #if DEBUG_FLAG
    uint32_t task_counter = 0;   
 #endif
-   register_client();
-   for(task = 0; task < BATCH_SIZE; task ++){
-      temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
-      enqueue(task_queue, temp);
-      free_blob(temp);
+   uint32_t frame_num;
+   for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
+      register_client();
+      for(task = 0; task < BATCH_SIZE; task ++){
+         temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
+         annotate_blob(temp, get_this_client_id(), frame_num, task);
+         enqueue(task_queue, temp);
+         free_blob(temp);
+      }
+      while(1){
+         temp = try_dequeue(task_queue);
+         if(temp == NULL) break;
+#if DEBUG_FLAG
+         printf("Dequeued local task is %d\n", temp->id);
+#endif
+         process_task(temp);
+         free_blob(temp);
+#if DEBUG_FLAG
+         task_counter ++;   
+#endif
+      }
+#if DEBUG_FLAG
+      printf("Locally processed task number is %d\n", task_counter);
+#endif
+      cancel_client();
    }
-   while(1){
-      temp = try_dequeue(task_queue);
-      if(temp == NULL) break;
-#if DEBUG_FLAG
-      printf("Dequeued local task is %d\n", temp->id);
-#endif
-      process_task(temp);
-      free_blob(temp);
-#if DEBUG_FLAG
-      task_counter ++;   
-#endif
-   }
-#if DEBUG_FLAG
-   printf("Locally processed task number is %d\n", task_counter);
-#endif
-   cancel_client();
+
 }
 
 void send_result_thread(void *arg){
