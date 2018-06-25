@@ -42,7 +42,7 @@ int service_init(int portno, ctrl_proto proto){
 	printf("ERROR on binding\n");
 	exit(EXIT_FAILURE);
    }
-   if (proto == TCP) listen(sockfd, 10);//back_log numbers 
+   if (proto == TCP) listen(sockfd, 10);/*back_log numbers*/ 
    return sockfd;
 }
 
@@ -59,7 +59,7 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
    ip4addr_aton(dest_ip, ip_2_ip4(&dstaddr));
    inet_addr_from_ip4addr(&serv_addr.sin_addr, ip_2_ip4(&dstaddr));
 */
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
    struct sockaddr_in6 serv_addr;
    memset(&serv_addr, 0, sizeof(serv_addr));
    serv_addr.sin6_family = AF_INET6;
@@ -70,13 +70,13 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
    ip6addr_aton(dest_ip, ip_2_ip6(&dstaddr));
    inet6_addr_from_ip6addr(&serv_addr.sin6_addr, ip_2_ip6(&dstaddr));
 */
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
    if(proto == TCP) {
 #if IPV4_TASK
       sockfd = socket(AF_INET, SOCK_STREAM, 0);
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
       sockfd = socket(AF_INET6, SOCK_STREAM, 0);
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
       if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
          printf("ERROR connecting to %s on Port %d\n", dest_ip, portno);
          printf("ERROR connecting %s\n", strerror(errno));
@@ -84,9 +84,9 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
    } else if (proto == UDP) {
 #if IPV4_TASK
       sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
       sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
    }
    else {printf("Control protocol is not supported\n"); return NULL;}
    if (sockfd < 0) printf("ERROR opening socket\n");
@@ -121,9 +121,9 @@ blob* recv_data(service_conn* conn){
    socklen_t addr_len;
 #if IPV4_TASK
    addr_len = sizeof(struct sockaddr_in);
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
    addr_len = sizeof(struct sockaddr_in6);
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    read_from_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), &addr_len);
    buffer = (uint8_t*)malloc(bytes_length);
@@ -151,9 +151,9 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
    socklen_t clilen;
 #if IPV4_TASK
    struct sockaddr_in cli_addr;
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
    struct sockaddr_in6 cli_addr;
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
    int newsockfd;
    clilen = sizeof(cli_addr);
    uint32_t meta_data_bytes_length;
@@ -206,9 +206,9 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
    socklen_t clilen;
 #if IPV4_TASK
    struct sockaddr_in cli_addr;
-#elif IPV6_TASK//IPV4_TASK
+#elif IPV6_TASK/*IPV4_TASK*/
    struct sockaddr_in6 cli_addr;
-#endif//IPV4_TASK
+#endif/*IPV4_TASK*/
    int newsockfd;
    clilen = sizeof(cli_addr);
    uint32_t meta_data_bytes_length;
@@ -238,7 +238,9 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       read_from_sock(newsockfd, proto, meta_data, meta_data_bytes_length, (struct sockaddr *) &cli_addr, &clilen);
       handler_id =  look_up_handler_table((char*)meta_data, handler_name, handler_num);      
 #if DEBUG_FLAG
+#if IPV4_TASK
       printf("Operation is: %s, from %s\n", (char*)meta_data, inet_ntoa(cli_addr.sin_addr));
+#endif/*IPV4_TASK*/
 #endif
       free(meta_data);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
