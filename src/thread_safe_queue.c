@@ -4,6 +4,7 @@ static queue_node* new_node_and_copy_item(blob* item)
 {
    queue_node *temp = (queue_node*)malloc(sizeof(queue_node));
    temp->item = new_blob_and_copy_data(item->id, item->size, item->data);
+   copy_blob_meta(temp->item, item);
    temp->next = NULL;
    return temp; 
 }
