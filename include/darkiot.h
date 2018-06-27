@@ -21,6 +21,7 @@
 #include "exec_ctrl.h"
 #include "client.h"
 #include "gateway.h"
+#include "global_queues.h"
 
 #endif
 

@@ -1,9 +1,5 @@
 #include "gateway.h"
-static thread_safe_queue** results_pool;
-static thread_safe_queue* ready_pool;
-static uint32_t* results_counter;
-
-static thread_safe_queue* registration_list;
+#include "global_queues.h"
 
 /*Allocated spaces for gateway devices*/
 void init_gateway(){

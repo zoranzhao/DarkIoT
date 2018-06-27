@@ -1,7 +1,5 @@
 #include "client.h"
-
-static thread_safe_queue* task_queue;
-static thread_safe_queue* result_queue;
+#include "global_queues.h"
 
 void init_client(){
    task_queue = new_queue(MAX_QUEUE_SIZE);
