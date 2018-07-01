@@ -102,7 +102,6 @@ void* cancel_gateway(void* srv_conn){
 }
 
 void* steal_gateway(void* srv_conn){
-   printf("steal_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
    blob* temp = try_dequeue(registration_list);
    if(temp == NULL){
