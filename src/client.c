@@ -6,14 +6,14 @@ void init_client(){
    result_queue = new_queue(MAX_QUEUE_SIZE); 
 }
 
-static void register_client(){
+void register_client(){
    char request_type[20] = "register_gateway";
    service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
    send_request(request_type, 20, conn);
    close_service_connection(conn);
 }
 
-static void cancel_client(){
+void cancel_client(){
    char request_type[20] = "cancel_gateway";
    service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
    send_request(request_type, 20, conn);

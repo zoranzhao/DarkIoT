@@ -8,5 +8,7 @@ void steal_and_process_thread(void *arg);
 void generate_and_process_thread(void *arg);
 void send_result_thread(void *arg);
 void serve_stealing_thread(void *arg);
+void register_client();
+void cancel_client();
 
 #endif
