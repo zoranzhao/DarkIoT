@@ -42,6 +42,10 @@ int32_t get_client_id(const char* ip_addr){
    return (-1);//
 }
 
+char* get_client_addr(int32_t cli_id){
+   return addr_list[cli_id];
+}
+
 int32_t get_this_client_id(){
    return this_cli_id;
 }
