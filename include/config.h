@@ -32,6 +32,6 @@ extern uint32_t total_cli_num;
 /*Other parameters*/
 #define MAX_QUEUE_SIZE 256 
 #define BATCH_SIZE 16 /* Number of elements gateway should merge at*/
-#define FRAME_NUM 1
+#define FRAME_NUM 4
 
 #endif
