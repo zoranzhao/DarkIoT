@@ -1,2 +1,2 @@
 # DarkIoT
-Nothing is here, nothing!
+Distributed work stealing runtime for IoT devices. 
