@@ -1,6 +1,6 @@
 VPATH=./src
-SLIB=libdarkiot.so
-ALIB=libdarkiot.a
+SLIB=libdistriot.so
+ALIB=libdistriot.a
 OBJDIR=./obj/
 
 CC=gcc
