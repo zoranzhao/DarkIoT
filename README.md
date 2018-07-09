@@ -1,2 +1,1 @@
-# DarkIoT
-Distributed work stealing runtime for IoT devices. 
+# Distributed work stealing runtime for IoT devices. 
