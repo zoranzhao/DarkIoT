@@ -195,7 +195,7 @@ void test_edge_ctrl(){
 void test_gateway(){
 
    init_gateway();
-   char str[40]="Abracadabra, blablaboom"
+   char str[40]="Abracadabra, blablaboom";
    sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, str, 0, 0);
    sys_thread_t t1 = sys_thread_new("collect_result_thread", collect_result_thread, str, 0, 0);
    sys_thread_t t2 = sys_thread_new("merge_result_thread", merge_result_thread, str, 0, 0);
