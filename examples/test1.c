@@ -195,9 +195,10 @@ void test_edge_ctrl(){
 void test_gateway(){
 
    init_gateway();
-   sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, NULL, 0, 0);
-   sys_thread_t t1 = sys_thread_new("collect_result_thread", collect_result_thread, NULL, 0, 0);
-   sys_thread_t t2 = sys_thread_new("merge_result_thread", merge_result_thread, NULL, 0, 0);
+   char str[40]="Abracadabra, blablaboom"
+   sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, str, 0, 0);
+   sys_thread_t t1 = sys_thread_new("collect_result_thread", collect_result_thread, str, 0, 0);
+   sys_thread_t t2 = sys_thread_new("merge_result_thread", merge_result_thread, str, 0, 0);
    exec_barrier(START_CTRL, TCP);
 
    sys_thread_join(t1);
