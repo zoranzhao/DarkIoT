@@ -21,11 +21,14 @@
 #define BLUE0    "192.168.4.14"
 #define ORANGE0  "192.168.4.15"
 #define PINK0    "192.168.4.16"
+#define EDGE_ADDR_LIST    {"192.168.4.9", "192.168.4.8", "192.168.4.4", "192.168.4.14", "192.168.4.15", "192.168.4.16"}
+#define EDGE_ID_LIST    {0, 1, 2, 3, 4, 5}
+#define TOTAL_EDGE_NUM 6
 
 /*Client number...*/
 #define CLI_NUM 6
 /*Global configurations defined in config.c*/
-extern char* addr_list[CLI_NUM];
+extern const char* addr_list[CLI_NUM];
 extern uint32_t this_cli_id;
 extern uint32_t total_cli_num;
 

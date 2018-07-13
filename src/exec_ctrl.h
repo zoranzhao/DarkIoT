@@ -9,7 +9,7 @@
 void exec_barrier(int portno, ctrl_proto proto);
 void exec_start_gateway(int portno, ctrl_proto proto);
 int32_t get_client_id(const char* ip_addr);
-char* get_client_addr(int32_t cli_id);
+const char* get_client_addr(int32_t cli_id);
 
 int32_t get_this_client_id();
 void annotate_blob(blob* temp, int32_t cli_id, int32_t frame_seq, int32_t task_id);
