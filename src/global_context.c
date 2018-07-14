@@ -13,10 +13,14 @@ thread_safe_queue* task_queue;
 thread_safe_queue* result_queue;
 */
 
-static const char* addr_list[CLI_NUM] = EDGE_ADDR_LIST;
+static const char* edge_addr_list[CLI_NUM] = EDGE_ADDR_LIST;
 
-void init_context(device_ctxt* ctxt, uint32_t cli_id, uint32_t cli_num){
+device_ctxt* init_context(uint32_t cli_id, uint32_t cli_num){
+
+   device_ctxt* ctxt = (device_ctxt*)malloc(sizeof(device_ctxt)); 
    uint32_t i;
+
+/*Queues used in gateway device*/
    ctxt->results_pool = (thread_safe_queue**)malloc(sizeof(thread_safe_queue*)*cli_num);
    ctxt->results_counter = (uint32_t*)malloc(sizeof(uint32_t)*cli_num);
    for(i = 0; i < cli_num; i++){
@@ -25,17 +29,16 @@ void init_context(device_ctxt* ctxt, uint32_t cli_id, uint32_t cli_num){
    } 
    ctxt->ready_pool = new_queue(MAX_QUEUE_SIZE); 
    ctxt->registration_list = new_queue(MAX_QUEUE_SIZE); 
+   ctxt->total_cli_num = cli_num;
+   for(i = 0; i < cli_num; i++){
+      strcpy(ctxt->addr_list[i], edge_addr_list[i]);
+   }
+ 
 
+/*Queues used in edge device*/
    ctxt->task_queue = new_queue(MAX_QUEUE_SIZE);
    ctxt->result_queue = new_queue(MAX_QUEUE_SIZE); 
-
    ctxt->this_cli_id = cli_id;
-   ctxt->total_cli_num = cli_num;
 
-/*
-   ctxt->addr_list[CLI_NUM];
-   for(i = 0; i < cli_num; i++){
-      
-   }
-*/ 
+   return ctxt;
 }
