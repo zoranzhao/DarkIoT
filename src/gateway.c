@@ -2,27 +2,40 @@
 #include "global_queues.h"
 
 /*Allocated spaces for gateway devices*/
-void init_gateway(){
-   results_pool = (thread_safe_queue**)malloc(sizeof(thread_safe_queue*)*total_cli_num);
-   results_counter = (uint32_t*)malloc(sizeof(uint32_t)*total_cli_num);
+device_ctxt* init_gateway(uint32_t cli_num, const char** edge_addr_list){
+
+   device_ctxt* ctxt = (device_ctxt*)malloc(sizeof(device_ctxt)); 
    uint32_t i;
-   for(i = 0; i < total_cli_num; i++){
-      results_pool[i] = new_queue(MAX_QUEUE_SIZE);
-      results_counter[i] = 0;
+
+/*Queues used in gateway device*/
+   ctxt->results_pool = (thread_safe_queue**)malloc(sizeof(thread_safe_queue*)*cli_num);
+   ctxt->results_counter = (uint32_t*)malloc(sizeof(uint32_t)*cli_num);
+   for(i = 0; i < cli_num; i++){
+      ctxt->results_pool[i] = new_queue(MAX_QUEUE_SIZE);
+      ctxt->results_counter[i] = 0;
    } 
-   ready_pool = new_queue(MAX_QUEUE_SIZE); 
-   registration_list = new_queue(MAX_QUEUE_SIZE); 
+   ctxt->ready_pool = new_queue(MAX_QUEUE_SIZE); 
+   ctxt->registration_list = new_queue(MAX_QUEUE_SIZE); 
+   ctxt->total_cli_num = cli_num;
+   for(i = 0; i < cli_num; i++){
+      strcpy(ctxt->addr_list[i], edge_addr_list[i]);
+   }
+ 
+
+
+   return ctxt;
 }
 
 void* result_gateway(void* srv_conn, void* arg){
    printf("result_gateway ... ... \n");
+   device_ctxt* ctxt = (device_ctxt*)arg;
    service_conn *conn = (service_conn *)srv_conn;
    int32_t cli_id;
 #if DEBUG_FLAG
    char ip_addr[ADDRSTRLEN];
    int32_t processing_cli_id;
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);
-   processing_cli_id = get_client_id(ip_addr);
+   processing_cli_id = get_client_id(ip_addr, ctxt);
    if(processing_cli_id < 0)
       printf("Client IP address unknown ... ...\n");
 #endif
@@ -69,9 +82,10 @@ void merge_result_thread(void *arg){
 void* register_gateway(void* srv_conn, void *arg){
    printf("register_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
+   device_ctxt* ctxt = (device_ctxt*)arg;
    char ip_addr[ADDRSTRLEN];
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
-   blob* temp = new_blob_and_copy_data(get_client_id(ip_addr), ADDRSTRLEN, (uint8_t*)ip_addr);
+   blob* temp = new_blob_and_copy_data(get_client_id(ip_addr, ctxt), ADDRSTRLEN, (uint8_t*)ip_addr);
    enqueue(registration_list, temp);
    free_blob(temp);
 #if DEBUG_FLAG
@@ -94,9 +108,10 @@ void* register_gateway(void* srv_conn, void *arg){
 void* cancel_gateway(void* srv_conn, void *arg){
    printf("cancel_gateway ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
+   device_ctxt* ctxt = (device_ctxt*)arg;
    char ip_addr[ADDRSTRLEN];
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
-   int32_t cli_id = get_client_id(ip_addr);
+   int32_t cli_id = get_client_id(ip_addr, ctxt);
    remove_by_id(registration_list, cli_id);
    return NULL;
 }

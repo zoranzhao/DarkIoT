@@ -15,6 +15,7 @@
 /*IP address*/
 #define AP "10.157.89.51"/*Local ip is "192.168.4.1"*/
 #define GATEWAY "192.168.4.1"
+/*
 #define BLUE1    "192.168.4.9"
 #define ORANGE1  "192.168.4.8"
 #define PINK1    "192.168.4.4"
@@ -24,14 +25,15 @@
 #define EDGE_ADDR_LIST    {"192.168.4.9", "192.168.4.8", "192.168.4.4", "192.168.4.14", "192.168.4.15", "192.168.4.16"}
 #define EDGE_ID_LIST    {0, 1, 2, 3, 4, 5}
 #define TOTAL_EDGE_NUM 6
-
+*/
 /*Client number...*/
-#define CLI_NUM 6
+/*#define CLI_NUM 6*/
 /*Global configurations defined in config.c*/
+/*
 extern const char* addr_list[CLI_NUM];
 extern uint32_t this_cli_id;
 extern uint32_t total_cli_num;
-
+*/
 /*Other parameters*/
 #define MAX_QUEUE_SIZE 256 
 #define BATCH_SIZE 16 /* Number of elements gateway should merge at*/

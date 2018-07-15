@@ -1,10 +1,16 @@
 #include "client.h"
 #include "global_queues.h"
 
-void init_client(){
-   task_queue = new_queue(MAX_QUEUE_SIZE);
-   result_queue = new_queue(MAX_QUEUE_SIZE); 
+device_ctxt* init_client(uint32_t cli_id){
+   device_ctxt* ctxt = (device_ctxt*)malloc(sizeof(device_ctxt)); 
+/*Queues used in edge device*/
+   ctxt->task_queue = new_queue(MAX_QUEUE_SIZE);
+   ctxt->result_queue = new_queue(MAX_QUEUE_SIZE); 
+   ctxt->this_cli_id = cli_id;
+
+   return ctxt;
 }
+
 
 void register_client(){
    char request_type[20] = "register_gateway";
@@ -61,6 +67,7 @@ void steal_and_process_thread(void *arg){
 }
 
 void generate_and_process_thread(void *arg){
+   device_ctxt* ctxt = (device_ctxt*)arg;
    uint32_t task;
    blob* temp;
    char data[20] = "input_data";
@@ -69,7 +76,7 @@ void generate_and_process_thread(void *arg){
       register_client();
       for(task = 0; task < BATCH_SIZE; task ++){
          temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
-         annotate_blob(temp, get_this_client_id(), frame_num, task);
+         annotate_blob(temp, get_this_client_id(ctxt), frame_num, task);
          enqueue(task_queue, temp);
          free_blob(temp);
       }
