@@ -12,9 +12,13 @@
 #define RESULT_COLLECT_PORT 11114 //Control the start and stop of a service
 #define WORK_STEAL_PORT 11115 //Control the start and stop of a service
 
+#define MAX_QUEUE_SIZE 256
+
 /*IP address*/
-#define AP "10.157.89.51"/*Local ip is "192.168.4.1"*/
+/*
+#define AP "10.157.89.51"
 #define GATEWAY "192.168.4.1"
+*/
 /*
 #define BLUE1    "192.168.4.9"
 #define ORANGE1  "192.168.4.8"
@@ -35,8 +39,8 @@ extern uint32_t this_cli_id;
 extern uint32_t total_cli_num;
 */
 /*Other parameters*/
-#define MAX_QUEUE_SIZE 256 
-#define BATCH_SIZE 16 /* Number of elements gateway should merge at*/
+ 
+/*
 #define FRAME_NUM 4
-
+*/
 #endif

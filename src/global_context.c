@@ -59,3 +59,9 @@ void set_gateway_public_addr(device_ctxt* ctxt, const char* addr){
    strcpy(ctxt->gateway_public_addr, addr);
 }
 
+void set_total_frames(device_ctxt* ctxt, uint32_t frame_num){
+   ctxt->total_frames = frame_num;
+}
+
+
+

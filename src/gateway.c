@@ -47,7 +47,7 @@ void* result_gateway(void* srv_conn, void* arg){
    enqueue(results_pool[cli_id], temp);
    free_blob(temp);
    results_counter[cli_id]++;
-   if(results_counter[cli_id] == BATCH_SIZE){
+   if(results_counter[cli_id] == ctxt->batch_size){
       temp = new_empty_blob(cli_id);
       enqueue(ready_pool, temp);
       free_blob(temp);
@@ -66,6 +66,7 @@ void collect_result_thread(void *arg){
 }
 
 void merge_result_thread(void *arg){
+   device_ctxt* ctxt = (device_ctxt*)arg;
    blob* temp = dequeue(ready_pool);
    int32_t cli_id = temp->id;
    free_blob(temp);
@@ -73,7 +74,7 @@ void merge_result_thread(void *arg){
    printf("Results for client %d are all collected\n", cli_id);
 #endif
    uint32_t batch = 0;
-   for(batch = 0; batch < BATCH_SIZE; batch ++){
+   for(batch = 0; batch < ctxt->batch_size; batch ++){
       temp = dequeue(results_pool[cli_id]);
       free_blob(temp);
    }

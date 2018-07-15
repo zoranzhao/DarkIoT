@@ -12,16 +12,16 @@ device_ctxt* init_client(uint32_t cli_id){
 }
 
 
-void register_client(){
+void register_client(device_ctxt* ctxt){
    char request_type[20] = "register_gateway";
-   service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
+   service_conn* conn = connect_service(TCP, ctxt->gateway_local_addr, WORK_STEAL_PORT);
    send_request(request_type, 20, conn);
    close_service_connection(conn);
 }
 
-void cancel_client(){
+void cancel_client(device_ctxt* ctxt){
    char request_type[20] = "cancel_gateway";
-   service_conn* conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
+   service_conn* conn = connect_service(TCP, ctxt->gateway_local_addr, WORK_STEAL_PORT);
    send_request(request_type, 20, conn);
    close_service_connection(conn);
 }
@@ -38,10 +38,11 @@ static void process_task(blob* temp){
 
 void steal_and_process_thread(void *arg){
    /*Check gateway for possible stealing victims*/
+   device_ctxt* ctxt = (device_ctxt*)arg;
    service_conn* conn;
    blob* temp;
    while(1){
-      conn = connect_service(TCP, GATEWAY, WORK_STEAL_PORT);
+      conn = connect_service(TCP, ctxt->gateway_local_addr, WORK_STEAL_PORT);
       send_request("steal_gateway", 20, conn);
       temp = recv_data(conn);
       close_service_connection(conn);
@@ -72,9 +73,9 @@ void generate_and_process_thread(void *arg){
    blob* temp;
    char data[20] = "input_data";
    uint32_t frame_num;
-   for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
-      register_client();
-      for(task = 0; task < BATCH_SIZE; task ++){
+   for(frame_num = 0; frame_num < ctxt->total_frames; frame_num ++){
+      register_client(ctxt);
+      for(task = 0; task < ctxt->batch_size; task ++){
          temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
          annotate_blob(temp, get_this_client_id(ctxt), frame_num, task);
          enqueue(task_queue, temp);
@@ -86,20 +87,21 @@ void generate_and_process_thread(void *arg){
          process_task(temp);
          free_blob(temp);
       }
-      cancel_client();
+      cancel_client(ctxt);
    }
 
 }
 
 void send_result_thread(void *arg){
    service_conn* conn;
+   device_ctxt* ctxt = (device_ctxt*)arg;
    blob* temp;
 #if DEBUG_FLAG
    uint32_t task_counter = 0;   
 #endif
    while(1){
       temp = dequeue(result_queue);
-      conn = connect_service(TCP, GATEWAY, RESULT_COLLECT_PORT);
+      conn = connect_service(TCP, ctxt->gateway_local_addr, RESULT_COLLECT_PORT);
       send_request("result_gateway", 20, conn);
 #if DEBUG_FLAG
       task_counter ++;  

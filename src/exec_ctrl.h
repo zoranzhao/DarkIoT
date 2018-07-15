@@ -8,7 +8,7 @@
 #include "global_context.h"
 
 void exec_barrier(int portno, ctrl_proto proto, device_ctxt* ctxt);
-void exec_start_gateway(int portno, ctrl_proto proto);
+void exec_start_gateway(int portno, ctrl_proto proto, char* gateway_public_addr);
 int32_t get_client_id(const char* ip_addr, device_ctxt* ctxt);
 const char* get_client_addr(int32_t cli_id, device_ctxt* ctxt);
 

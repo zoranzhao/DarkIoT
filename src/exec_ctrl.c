@@ -1,8 +1,8 @@
 #include "exec_ctrl.h"
 
-void exec_start_gateway(int portno, ctrl_proto proto){
+void exec_start_gateway(int portno, ctrl_proto proto, char* gateway_public_addr){
     char request_type[20] = "start_gateway";
-    service_conn* conn = connect_service(proto, AP, portno);
+    service_conn* conn = connect_service(proto, gateway_public_addr, portno);
     send_request(request_type, 20, conn);
     close_service_connection(conn);
 }

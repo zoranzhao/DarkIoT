@@ -30,5 +30,6 @@ device_ctxt* init_context(uint32_t cli_id, uint32_t cli_num, const char** edge_a
 void set_batch_size(device_ctxt* ctxt, uint32_t size);
 void set_gateway_local_addr(device_ctxt* ctxt, const char* addr);
 void set_gateway_public_addr(device_ctxt* ctxt, const char* addr);
+void set_total_frames(device_ctxt* ctxt, uint32_t frame_num);
 #endif
 
