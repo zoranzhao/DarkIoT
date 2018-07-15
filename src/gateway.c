@@ -43,7 +43,7 @@ void* result_gateway(void* srv_conn, void* arg){
    blob* temp = recv_data(conn);
    cli_id = get_blob_cli_id(temp);
 #if DEBUG_FLAG
-   printf("Result from %d: %s is for client %d, total number recved is %d\n", processing_cli_id, ip_addr, cli_id, results_counter[cli_id]);
+   printf("Result from %d: %s is for client %d, total number recved is %d\n", processing_cli_id, ip_addr, cli_id, ctxt->results_counter[cli_id]);
 #endif
    enqueue(ctxt->results_pool[cli_id], temp);
    free_blob(temp);
