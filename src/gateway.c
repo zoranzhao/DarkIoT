@@ -16,7 +16,9 @@ device_ctxt* init_gateway(uint32_t cli_num, const char** edge_addr_list){
    ctxt->ready_pool = new_queue(MAX_QUEUE_SIZE); 
    ctxt->registration_list = new_queue(MAX_QUEUE_SIZE); 
    ctxt->total_cli_num = cli_num;
+   ctxt->addr_list = (char**)malloc(sizeof(char*)*cli_num);
    for(i = 0; i < cli_num; i++){
+      ctxt->addr_list[i] = (char*)malloc(sizeof(char)*ADDR_LEN);
       strcpy(ctxt->addr_list[i], edge_addr_list[i]);
    }
  
