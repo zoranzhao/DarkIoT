@@ -22,6 +22,8 @@
 #include "gateway.h"
 #include "global_context.h"
 
+#define DEBUG_FLAG 1
+
 #endif
 
 

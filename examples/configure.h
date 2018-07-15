@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 /*Debug printing information*/
-#define DEBUG_FLAG 1
 
 #define GATEWAY_PUBLIC_ADDR "10.157.89.51"
 #define GATEWAY_LOCAL_ADDR "192.168.4.1"
