@@ -17,11 +17,10 @@
 #include "thread_util.h"
 #include "data_blob.h"
 #include "network_util.h"
-#include "config.h"
 #include "exec_ctrl.h"
 #include "client.h"
 #include "gateway.h"
-#include "global_queues.h"
+#include "global_context.h"
 
 #endif
 

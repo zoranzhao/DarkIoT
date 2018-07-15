@@ -1,7 +1,6 @@
 #ifndef GATEWAY_H
 #define GATEWAY_H
-#include "config.h"
-#include "exec_ctrl.h"
+#include "darkiot.h"
 
 device_ctxt* init_gateway(uint32_t cli_num, const char** edge_addr_list);
 void collect_result_thread(void *arg);

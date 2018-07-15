@@ -4,7 +4,6 @@
 #include "thread_util.h"
 #include "thread_safe_queue.h"
 #include "network_util.h"
-#include "config.h"
 #include "global_context.h"
 
 void exec_barrier(int portno, ctrl_proto proto, device_ctxt* ctxt);

@@ -1,7 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
-#include "config.h"
-#include "exec_ctrl.h"
+#include "darkiot.h"
 
 device_ctxt* init_client(uint32_t cli_id);
 void steal_and_process_thread(void *arg);

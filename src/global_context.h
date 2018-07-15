@@ -1,9 +1,9 @@
 #ifndef GLOBAL_CONTEXT_H
 #define GLOBAL_CONTEXT_H
 #include "thread_safe_queue.h"
-#include "config.h"
 #include <string.h>
 #define ADDR_LEN 64 
+#define MAX_QUEUE_SIZE 256
 
 typedef struct dev_ctxt {
    thread_safe_queue** results_pool;

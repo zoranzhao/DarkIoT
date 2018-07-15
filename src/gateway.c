@@ -1,5 +1,4 @@
 #include "gateway.h"
-#include "global_queues.h"
 
 /*Allocated spaces for gateway devices*/
 device_ctxt* init_gateway(uint32_t cli_num, const char** edge_addr_list){
@@ -44,14 +43,14 @@ void* result_gateway(void* srv_conn, void* arg){
 #if DEBUG_FLAG
    printf("Result from %d: %s is for client %d, total number recved is %d\n", processing_cli_id, ip_addr, cli_id, results_counter[cli_id]);
 #endif
-   enqueue(results_pool[cli_id], temp);
+   enqueue(ctxt->results_pool[cli_id], temp);
    free_blob(temp);
-   results_counter[cli_id]++;
-   if(results_counter[cli_id] == ctxt->batch_size){
+   ctxt->results_counter[cli_id]++;
+   if(ctxt->results_counter[cli_id] == ctxt->batch_size){
       temp = new_empty_blob(cli_id);
-      enqueue(ready_pool, temp);
+      enqueue(ctxt->ready_pool, temp);
       free_blob(temp);
-      results_counter[cli_id] = 0;
+      ctxt->results_counter[cli_id] = 0;
    }
 
    return NULL;
@@ -67,7 +66,7 @@ void collect_result_thread(void *arg){
 
 void merge_result_thread(void *arg){
    device_ctxt* ctxt = (device_ctxt*)arg;
-   blob* temp = dequeue(ready_pool);
+   blob* temp = dequeue(ctxt->ready_pool);
    int32_t cli_id = temp->id;
    free_blob(temp);
 #if DEBUG_FLAG
@@ -75,7 +74,7 @@ void merge_result_thread(void *arg){
 #endif
    uint32_t batch = 0;
    for(batch = 0; batch < ctxt->batch_size; batch ++){
-      temp = dequeue(results_pool[cli_id]);
+      temp = dequeue(ctxt->results_pool[cli_id]);
       free_blob(temp);
    }
 }
@@ -87,11 +86,11 @@ void* register_gateway(void* srv_conn, void *arg){
    char ip_addr[ADDRSTRLEN];
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
    blob* temp = new_blob_and_copy_data(get_client_id(ip_addr, ctxt), ADDRSTRLEN, (uint8_t*)ip_addr);
-   enqueue(registration_list, temp);
+   enqueue(ctxt->registration_list, temp);
    free_blob(temp);
 #if DEBUG_FLAG
-   queue_node* cur = registration_list->head;
-   if (registration_list->head == NULL){
+   queue_node* cur = ctxt->registration_list->head;
+   if (ctxt->registration_list->head == NULL){
       printf("No client is registered!\n");
    }
    while (1) {
@@ -113,18 +112,19 @@ void* cancel_gateway(void* srv_conn, void *arg){
    char ip_addr[ADDRSTRLEN];
    inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_addr, ADDRSTRLEN);  
    int32_t cli_id = get_client_id(ip_addr, ctxt);
-   remove_by_id(registration_list, cli_id);
+   remove_by_id(ctxt->registration_list, cli_id);
    return NULL;
 }
 
 void* steal_gateway(void* srv_conn, void *arg){
    service_conn *conn = (service_conn *)srv_conn;
-   blob* temp = try_dequeue(registration_list);
+   device_ctxt* ctxt = (device_ctxt*)arg;
+   blob* temp = try_dequeue(ctxt->registration_list);
    if(temp == NULL){
       char ip_addr[ADDRSTRLEN]="empty";
       temp = new_blob_and_copy_data(-1, ADDRSTRLEN, (uint8_t*)ip_addr);
    }else{
-      enqueue(registration_list, temp);
+      enqueue(ctxt->registration_list, temp);
    }
    send_data(temp, conn);
    free_blob(temp);

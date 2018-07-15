@@ -1,5 +1,4 @@
 #include "client.h"
-#include "global_queues.h"
 
 device_ctxt* init_client(uint32_t cli_id){
    device_ctxt* ctxt = (device_ctxt*)malloc(sizeof(device_ctxt)); 
@@ -26,13 +25,13 @@ void cancel_client(device_ctxt* ctxt){
    close_service_connection(conn);
 }
 
-static void process_task(blob* temp){
+static void process_task(blob* temp, device_ctxt* ctxt){
    blob* result;
    char data[20] = "output_data";
    result = new_blob_and_copy_data(temp->id, 20, (uint8_t*)data);
    copy_blob_meta(result, temp);
    sys_sleep(1000);
-   enqueue(result_queue, result); 
+   enqueue(ctxt->result_queue, result); 
    free_blob(result);
 }
 
@@ -62,7 +61,7 @@ void steal_and_process_thread(void *arg){
          sys_sleep(100);
          continue;
       }
-      process_task(temp);
+      process_task(temp, ctxt);
       free_blob(temp);
    }
 }
@@ -78,13 +77,13 @@ void generate_and_process_thread(void *arg){
       for(task = 0; task < ctxt->batch_size; task ++){
          temp = new_blob_and_copy_data((int32_t)task, 20, (uint8_t*)data);
          annotate_blob(temp, get_this_client_id(ctxt), frame_num, task);
-         enqueue(task_queue, temp);
+         enqueue(ctxt->task_queue, temp);
          free_blob(temp);
       }
       while(1){
-         temp = try_dequeue(task_queue);
+         temp = try_dequeue(ctxt->task_queue);
          if(temp == NULL) break;
-         process_task(temp);
+         process_task(temp, ctxt);
          free_blob(temp);
       }
       cancel_client(ctxt);
@@ -100,7 +99,7 @@ void send_result_thread(void *arg){
    uint32_t task_counter = 0;   
 #endif
    while(1){
-      temp = dequeue(result_queue);
+      temp = dequeue(ctxt->result_queue);
       conn = connect_service(TCP, ctxt->gateway_local_addr, RESULT_COLLECT_PORT);
       send_request("result_gateway", 20, conn);
 #if DEBUG_FLAG
@@ -116,7 +115,8 @@ void send_result_thread(void *arg){
 void* steal_client(void* srv_conn, void* arg){
    printf("steal_client ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
-   blob* temp = try_dequeue(task_queue);
+   device_ctxt* ctxt = (device_ctxt*)arg;
+   blob* temp = try_dequeue(ctxt->task_queue);
    if(temp == NULL){
       char data[20]="empty";
       temp = new_blob_and_copy_data(-1, 20, (uint8_t*)data);

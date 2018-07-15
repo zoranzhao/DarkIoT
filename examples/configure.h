@@ -5,13 +5,6 @@
 /*Debug printing information*/
 #define DEBUG_FLAG 1
 
-/*Assgin port number for different services*/
-#define PORTNO 11111 //Service for job stealing and sharing
-#define SMART_GATEWAY 11112 //Service for a smart gateway 
-#define START_CTRL 11113 //Control the start and stop of a service
-#define RESULT_COLLECT_PORT 11114 //Control the start and stop of a service
-#define WORK_STEAL_PORT 11115 //Control the start and stop of a service
-
 #define MAX_QUEUE_SIZE 256
 
 /*IP address*/
