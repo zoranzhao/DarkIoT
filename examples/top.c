@@ -21,8 +21,8 @@ make ARGS="2 wst non_data_source" test
 
 static const char* addr_list[TOTAL_EDGE_NUM] =EDGE_ADDR_LIST;
 
-void test_gateway(){
-   device_ctxt* ctxt = init_gateway(TOTAL_EDGE_NUM, addr_list);
+void test_gateway(uint32_t total_number){
+   device_ctxt* ctxt = init_gateway(total_number, addr_list);
    set_gateway_local_addr(ctxt, GATEWAY_LOCAL_ADDR);
    set_gateway_public_addr(ctxt, GATEWAY_PUBLIC_ADDR);
    set_total_frames(ctxt, FRAME_NUM);
@@ -94,7 +94,7 @@ void test_wst(int argc, char **argv)
          test_victim_client(cli_id);
       }else if(0 == strcmp(argv[3], "gateway")){
          printf("gateway\n");
-         test_gateway(TOTAL_EDGE_NUM);
+         test_gateway(cli_id);
       }
    }
 }
