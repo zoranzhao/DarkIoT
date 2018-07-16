@@ -26,6 +26,7 @@ void test_gateway(uint32_t total_number){
    set_gateway_local_addr(ctxt, GATEWAY_LOCAL_ADDR);
    set_gateway_public_addr(ctxt, GATEWAY_PUBLIC_ADDR);
    set_total_frames(ctxt, FRAME_NUM);
+   set_batch_size(ctxt, BATCH_SIZE);
 
    sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, ctxt, 0, 0);
    sys_thread_t t1 = sys_thread_new("collect_result_thread", collect_result_thread, ctxt, 0, 0);
@@ -44,6 +45,7 @@ void test_stealer_client(uint32_t edge_id){
    set_gateway_local_addr(ctxt, GATEWAY_LOCAL_ADDR);
    set_gateway_public_addr(ctxt, GATEWAY_PUBLIC_ADDR);
    set_total_frames(ctxt, FRAME_NUM);
+   set_batch_size(ctxt, BATCH_SIZE);
 
    exec_barrier(START_CTRL, TCP, ctxt);
 
@@ -60,6 +62,7 @@ void test_victim_client(uint32_t edge_id){
    set_gateway_local_addr(ctxt, GATEWAY_LOCAL_ADDR);
    set_gateway_public_addr(ctxt, GATEWAY_PUBLIC_ADDR);
    set_total_frames(ctxt, FRAME_NUM);
+   set_batch_size(ctxt, BATCH_SIZE);
 
    exec_barrier(START_CTRL, TCP, ctxt);
 
